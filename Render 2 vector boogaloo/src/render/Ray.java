@@ -27,7 +27,7 @@ public class Ray {
 		this.direction = direction;
 	}
 
-	/*public double distanceToSphere(Sphere sphere) {
+	public double distanceToSphere(Sphere sphere) {
 		Vector L = this.origin.subtractToVector(sphere.getCenter());
 		//System.out.println("L: "+L.toString());
 		double tToCenter=L.dot(this.direction.normalize());
@@ -51,7 +51,7 @@ public class Ray {
 			//System.out.println("ray does not hit sphere");
 			return Integer.MAX_VALUE;
 		}
-	}*/
+	}
 
 	public double distanceToSpheres(Sphere[] spheres) {
 		double[] distances=new double[spheres.length];
