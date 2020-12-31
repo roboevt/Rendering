@@ -7,7 +7,7 @@ public class Engine {
 	static int renderHeight=200;
 	static int renderScale=4;
 
-	public static double[][] calculateRays(Ray[][] cameraRays, Sphere[] spheres, Point light){
+	/*public static double[][] calculateRays(Ray[][] cameraRays, Sphere[] spheres, Point light){
 		double[][] brightness=new double[renderWidth][renderHeight];
 		boolean inShadow=false;
 
@@ -31,7 +31,7 @@ public class Engine {
 							Vector vectorToLight=new Vector(light.x-pointOnSphere.x,light.y-pointOnSphere.y,light.z-pointOnSphere.z);
 							Ray rayToLight=new Ray(pointOnSphere,vectorToLight.normalize());
 
-							
+
 							if(rayToLight.distanceToSphere(spheres[i])<vectorToLight.magnitude()) { //in shadow
 								inShadow=true;
 							}
@@ -41,6 +41,39 @@ public class Engine {
 						}else {
 							brightness[x][y]=255;
 						}
+					}
+				}
+			}
+		}
+		return brightness;
+	}*/
+
+	public static double[][] calculateRays(Ray[][] cameraRays, Sphere[] spheres, Point light){
+		double[][] brightness=new double[renderWidth][renderHeight];
+
+		int x=-1;
+		int y=0;
+		for(Ray[] array : cameraRays) {
+			y=-1;
+			x++;
+			for(Ray ray : array) {
+				y++;
+				double distanceToSphere=ray.distanceToSpheres(spheres);
+				if(distanceToSphere<9999) {//ray hits sphere
+					Vector vectorToSphere=ray.getDirection().multiply(distanceToSphere);
+					Point pointOnSphere=ray.getOrigin().add(vectorToSphere.toPoint());
+					//need to calculate and add a normal vector to push the point away from the sphere
+					pointOnSphere.setZ(pointOnSphere.getZ()+.01);
+					Vector vectorToLight=new Vector(light.x-pointOnSphere.x,light.y-pointOnSphere.y,light.z-pointOnSphere.z);
+					Ray rayToLight=new Ray(pointOnSphere,vectorToLight.normalize());
+
+					//System.out.println(rayToLight.distanceToSphere(spheres));
+					if(rayToLight.distanceToSpheres(spheres)<vectorToLight.magnitude()) { //in shadow
+						brightness[x][y]=0;
+						//System.out.println("in shadow");
+					}else {
+						brightness[x][y]=255;
+						//System.out.println("in light");
 					}
 				}
 			}
@@ -75,11 +108,11 @@ public class Engine {
 		Point sphere1Center=new Point(0,0,0);
 		Sphere sphere1=new Sphere(sphere1Center,.1);
 		Point sphere2Center=new Point(0,0,0);
-		Sphere sphere2=new Sphere(sphere2Center,.1);
+		Sphere sphere2=new Sphere(sphere2Center,.3);
 		Point floorSphereCenter=new Point(0,-101,0);
 		Sphere floorSphere=new Sphere(floorSphereCenter,100);
 		Sphere[] spheres= {sphere1,sphere2,floorSphere};
-		
+
 
 		Point light=new Point(0,10,0);
 		double i=0;
