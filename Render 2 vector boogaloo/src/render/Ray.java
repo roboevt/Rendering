@@ -91,7 +91,19 @@ public class Ray {
 		Arrays.sort(distances);
 		return distances[0];
 	}
-
+	
+	public Ray calculateReflection(Ray normal,Point pointOnSphere) {
+		// (vect incoming)-(2*normal)*(normal dot incoming)
+		normal.setDirection(normal.getDirection().normalize()); //normalize
+		
+		double dot=normal.getDirection().dot(this.getDirection()); //(normal dot incoming)
+		
+		Vector step2=normal.getDirection().multiply(2*dot); //(2*normal)*
+		
+		Vector reflection=this.getDirection().subtract(step2);
+	
+		return new Ray(pointOnSphere,reflection);
+	}
 
 	public static void main(String[] args) {
 		/*Point origin=new Point(0,0,-10);
