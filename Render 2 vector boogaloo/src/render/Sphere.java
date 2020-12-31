@@ -3,10 +3,12 @@ package render;
 public class Sphere {
 	public Point center;
 	public double radius;
+	public Material material;
 	
-	public Sphere(Point center, double radius) {
+	public Sphere(Point center, double radius, Material material) {
 		this.center = center;
 		this.radius = radius;
+		this.material=material;
 	}
 
 	public Point getCenter() {

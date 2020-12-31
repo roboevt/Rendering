@@ -3,9 +3,9 @@ package render;
 import java.awt.Color;
 
 public class Engine {
-	static int renderWidth=300;
-	static int renderHeight=300;
-	static int renderScale=3;
+	static int renderWidth=500;
+	static int renderHeight=500;
+	static int renderScale=2;
 
 	public static double[][] calculateRays(Ray[][] cameraRays, Sphere[] spheres, Point light){
 		double[][] brightness=new double[renderWidth][renderHeight];
@@ -23,29 +23,24 @@ public class Engine {
 	}
 
 	public static double calculateRay(Ray ray, Sphere[] spheres, Point light, int bounces) {
-		if(bounces>0) {
+		if(bounces>3) {//end condition - last ray shadow check
 			//int hitSphere=-1;
 			double distanceToSphere=ray.distanceToSpheres(spheres);
 			if(distanceToSphere<Integer.MAX_VALUE-1) { //hit sphere
 				Vector vectorToSphere=ray.getDirection().multiply(distanceToSphere);
 				Point pointOnSphere=ray.getOrigin().add(vectorToSphere.toPoint());
-				/*for(int i=0;i<spheres.length;i++) {
-					Vector centerToPoint=new Vector(pointOnSphere.x-spheres[i].getCenter().x, pointOnSphere.y-spheres[i].getCenter().y, pointOnSphere.z-spheres[i].getCenter().z);
-					if(Math.abs(centerToPoint.magnitude()-spheres[i].getRadius())<.01) {//point is on sphere i
-						hitSphere=i;
-					}
-				}
-				Vector normal=new Vector(pointOnSphere.x-spheres[hitSphere].getCenter().x, pointOnSphere.y-spheres[hitSphere].getCenter().y, pointOnSphere.z-spheres[hitSphere].getCenter().z);
-				pointOnSphere.add(normal.multiply(.01).toPoint());
-*/
+
 				if(checkShadow(pointOnSphere,spheres,light)) {
 					return 40;
 				}else {
 					return 255;
 				}
+			}else {//did not hit sphere
+				return 0;
 			}
 		}
-		
+		//not end condition
+
 		double brightness=0;
 		double distanceToSphere=ray.distanceToSpheres(spheres);
 		int hitSphere=-1;
@@ -58,18 +53,18 @@ public class Engine {
 					hitSphere=i;
 				}
 			}
-			Vector normal=new Vector(pointOnSphere.x-spheres[hitSphere].getCenter().x, pointOnSphere.y-spheres[hitSphere].getCenter().y, pointOnSphere.z-spheres[hitSphere].getCenter().z);
-			pointOnSphere.add(normal.multiply(.01).toPoint());
-			Ray reflection=ray.calculateReflection(new Ray(spheres[hitSphere].getCenter(),normal), pointOnSphere);
-			//System.out.println("reflection origin: "+reflection.getOrigin().toString());
-			//System.out.println("reflection direction: "+reflection.getDirection().toString());
-			brightness=calculateRay(reflection,spheres,light,bounces+1);
-
-			/*if(checkShadow(pointOnSphere,spheres,light)) {
-				brightness=40;
+			if(spheres[hitSphere].material.reflective) {
+				Vector normal=new Vector(pointOnSphere.x-spheres[hitSphere].getCenter().x, pointOnSphere.y-spheres[hitSphere].getCenter().y, pointOnSphere.z-spheres[hitSphere].getCenter().z);
+				//pointOnSphere.add(normal.multiply(.01).toPoint());
+				Ray reflection=ray.calculateReflection(new Ray(spheres[hitSphere].getCenter(),normal), pointOnSphere);
+				brightness=calculateRay(reflection,spheres,light,bounces+1);
 			}else {
-				brightness=255;
-			}*/
+				if(checkShadow(pointOnSphere,spheres,light)) {
+					return 40;
+				}else {
+					return 255;
+				}
+			}
 		}	
 		return brightness;
 	}
@@ -104,15 +99,18 @@ public class Engine {
 		StdDraw.setPenRadius(.005);
 		StdDraw.enableDoubleBuffering();
 
-		Point camLocation=new Point(0,-.5,-10);
+		Point camLocation=new Point(0,0,-10);
 		Camera camera=new Camera(camLocation,renderWidth,renderHeight,6);
 
 		Point sphere1Center=new Point(0,0,0);
-		Sphere sphere1=new Sphere(sphere1Center,.15);
+		Material sphere1Material=new Material(true);
+		Sphere sphere1=new Sphere(sphere1Center,.15,sphere1Material);
 		Point sphere2Center=new Point(0,0,0);
-		Sphere sphere2=new Sphere(sphere2Center,.3);
+		Material sphere2Material=new Material(true);
+		Sphere sphere2=new Sphere(sphere2Center,.3,sphere2Material);
 		Point floorSphereCenter=new Point(0,-1001,0);
-		Sphere floorSphere=new Sphere(floorSphereCenter,1000.2);
+		Material floorMaterial=new Material(false);
+		Sphere floorSphere=new Sphere(floorSphereCenter,1000.2,floorMaterial);
 		Sphere[] spheres= {sphere1,sphere2,floorSphere};
 
 
