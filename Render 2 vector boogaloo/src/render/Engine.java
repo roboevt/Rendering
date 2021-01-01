@@ -3,10 +3,10 @@ package render;
 import java.awt.Color;
 
 public class Engine {
-	static int renderWidth=800;
-	static int renderHeight=800;
-	static int renderScale=1;
-	static int maxBounces=4;
+	static int renderWidth=400;
+	static int renderHeight=400;
+	static int renderScale=2;
+	static int maxBounces=5;
 	
 	public static Color[][] calculateRays(Ray[][] cameraRays, Sphere[] spheres, Point light){
 		Color[][] color=new Color[renderWidth][renderHeight];
@@ -35,8 +35,8 @@ public class Engine {
 						hitSphere=i;
 					}
 				}
-				if(checkShadow(pointOnSphere,spheres,light)) {
-					return spheres[hitSphere].material.color.darker();
+				if(checkShadow(pointOnSphere,spheres,light)) {//check shadows
+					return spheres[hitSphere].material.darken(6);
 				}else {
 					return spheres[hitSphere].material.color.brighter();
 				}
@@ -44,8 +44,8 @@ public class Engine {
 				return Color.black;
 			}
 		}
+		
 		//not end condition
-
 		Color color=new Color(0,0,0);
 		double distanceToSphere=ray.distanceToSpheres(spheres);
 		int hitSphere=-1;
@@ -65,7 +65,7 @@ public class Engine {
 				color=calculateRay(reflection,spheres,light,bounces+1);
 			}else {// if not reflective, check shadows and end.
 				if(checkShadow(pointOnSphere,spheres,light)) {
-					return spheres[hitSphere].material.color.darker();
+					return spheres[hitSphere].material.darken(6);
 				}else {
 					return spheres[hitSphere].material.color.brighter();
 				}
@@ -104,7 +104,7 @@ public class Engine {
 		StdDraw.enableDoubleBuffering();
 
 		Point camLocation=new Point(0,0,-4);
-		Camera camera=new Camera(camLocation,renderWidth,renderHeight,4);
+		Camera camera=new Camera(camLocation,0,90,0,renderWidth,renderHeight,4);
 
 		Point circlingSphereCenter=new Point(0,0,0);
 		Material circlingSphereMaterial=new Material(true);
@@ -116,7 +116,7 @@ public class Engine {
 		
 		Point floorSphereCenter=new Point(0,-1001,0);
 		Material floorMaterial=new Material(false);
-		Sphere floorSphere=new Sphere(floorSphereCenter,1000.2,floorMaterial);
+		Sphere floorSphere=new Sphere(floorSphereCenter,1000,floorMaterial);
 		floorSphere.setColor(0, 255, 255);
 		Point sideSphere1Center=new Point(-.5,0,0);
 		Material sideSphere1Material=new Material(false);
@@ -125,7 +125,7 @@ public class Engine {
 		Point sideSphere2Center=new Point(0.5,0,0);
 		Material sideSphere2Material=new Material(false);
 		Sphere sideSphere2=new Sphere(sideSphere2Center,.1,sideSphere2Material);
-		sideSphere2.setColor(255, 255, 0);
+		sideSphere2.setColor(255, 0, 255);
 		
 		Sphere[] spheres= {circlingSphere,bouncingSphere,floorSphere,sideSphere1,sideSphere2};
 
@@ -144,6 +144,8 @@ public class Engine {
 			spheres[1].setY(Math.sin(4*i)/10);
 			spheres[3].setZ(Math.sin(i)/3);
 			spheres[4].setZ(Math.sin(i+Math.PI)/3);
+			camera.setxAngle(Math.sin(i)*16);
+			camLocation.setY(Math.sin(i)/1);
 			Ray[][] cameraRays=camera.generateRays();
 			Color[][]color=calculateRays(cameraRays,spheres,light);
 			draw(color);
