@@ -1,12 +1,14 @@
 package render;
 
 import java.awt.Color;
+import java.awt.event.KeyEvent;
 
 public class Engine {
 	static int renderWidth=400;
 	static int renderHeight=400;
 	static int renderScale=2;
 	static int maxBounces=5;
+	static double speed=.1;
 	
 	public static Color[][] calculateRays(Ray[][] cameraRays, Sphere[] spheres, Point light){
 		Color[][] color=new Color[renderWidth][renderHeight];
@@ -93,6 +95,15 @@ public class Engine {
 		}
 		StdDraw.show();
 	}
+	
+	private static boolean checkFor(int key) {
+		if (StdDraw.isKeyPressed(key)) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
 
 	public static void main(String[] args) {
 		StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
@@ -102,11 +113,17 @@ public class Engine {
 		StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
 		StdDraw.setPenRadius(0);
 		StdDraw.enableDoubleBuffering();
+		double camX=0;
+		double camY=4;
+		double camZ=-8;
+		
+		double camRotX=30;
+		double camRotY=90;
+		double camRotZ=0;
+		Point camLocation=new Point(camX,camY,camZ);
+		Camera camera=new Camera(camLocation,camRotX,camRotY,camRotZ,renderWidth,renderHeight,3);
 
-		Point camLocation=new Point(0,0,-4);
-		Camera camera=new Camera(camLocation,0,90,0,renderWidth,renderHeight,4);
-
-		Point circlingSphereCenter=new Point(0,0,0);
+		/*Point circlingSphereCenter=new Point(0,0,0);
 		Material circlingSphereMaterial=new Material(true);
 		Sphere circlingSphere=new Sphere(circlingSphereCenter,.15,circlingSphereMaterial);
 		
@@ -128,24 +145,62 @@ public class Engine {
 		sideSphere2.setColor(255, 0, 255);
 		
 		Sphere[] spheres= {circlingSphere,bouncingSphere,floorSphere,sideSphere1,sideSphere2};
-
+	    */
+		
+		Sphere[] spheres=Sphere.generateFloorSpheres(10);
 		Point light=new Point(0,5,0);
 		double i=0;
 		while(true) {
 			//System.out.println("Frame done");
 			StdDraw.setPenColor(new Color(0,0,0));
 			StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
-			i+=.02;
+			i+=.01;
+			if (checkFor(KeyEvent.VK_W)) {
+				camZ+=speed;
+			}
+			if (checkFor(KeyEvent.VK_S)) {
+				camZ-=speed;
+			}
+			if (checkFor(KeyEvent.VK_A)) {
+				camX+=speed;
+			}
+			if (checkFor(KeyEvent.VK_D)) {
+				camX-=speed;
+			}
+			if (checkFor(KeyEvent.VK_SHIFT)) {
+				camY+=speed;
+			}
+			if (checkFor(KeyEvent.VK_CONTROL)) {
+				camY-=speed;
+			}
+			
+			if (checkFor(KeyEvent.VK_UP)) {
+				camRotX-=speed*10;
+			}
+			if (checkFor(KeyEvent.VK_DOWN)) {
+				camRotX+=speed*10;
+			}/*
+			if (checkFor(KeyEvent.VK_LEFT)) {
+				camRotY-=1;
+			}
+			if (checkFor(KeyEvent.VK_RIGHT)) {
+				camRotY+=1;
+			}*/
+			camera.setLocation(new Point(camX,camY,camZ));
+			camera.setxAngle(camRotX);
+			camera.setyAngle(camRotY);
+			camera.setzAngle(camRotZ);
 			//light.setX(Math.cos(i));
 			//light.setZ(Math.sin(i+Math.PI)*2);
-			spheres[0].setX(Math.sin(i+Math.PI)/2);
+			/*spheres[0].setX(Math.sin(i+Math.PI)/2);
 			spheres[0].setZ(Math.cos(i+Math.PI)/2);
 			spheres[0].setY(Math.sin(2*i)/2);
 			spheres[1].setY(Math.sin(4*i)/10);
 			spheres[3].setZ(Math.sin(i)/3);
 			spheres[4].setZ(Math.sin(i+Math.PI)/3);
-			camera.setxAngle(Math.sin(i)*16);
-			camLocation.setY(Math.sin(i)/1);
+			*/
+			//camera.setxAngle(Math.sin(i)*16);
+			//camLocation.setY(Math.sin(i)/1);
 			Ray[][] cameraRays=camera.generateRays();
 			Color[][]color=calculateRays(cameraRays,spheres,light);
 			draw(color);
