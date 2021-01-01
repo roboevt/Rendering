@@ -3,12 +3,13 @@ package render;
 import java.awt.Color;
 
 public class Engine {
-	static int renderWidth=500;
-	static int renderHeight=500;
-	static int renderScale=2;
-
-	public static double[][] calculateRays(Ray[][] cameraRays, Sphere[] spheres, Point light){
-		double[][] brightness=new double[renderWidth][renderHeight];
+	static int renderWidth=800;
+	static int renderHeight=800;
+	static int renderScale=1;
+	static int maxBounces=4;
+	
+	public static Color[][] calculateRays(Ray[][] cameraRays, Sphere[] spheres, Point light){
+		Color[][] color=new Color[renderWidth][renderHeight];
 		int x=-1;
 		int y=0;
 		for(Ray[] array : cameraRays) {
@@ -16,32 +17,36 @@ public class Engine {
 			x++;
 			for(Ray ray : array) {
 				y++;
-				brightness[x][y]=calculateRay(ray,spheres,light,0);
+				color[x][y]=calculateRay(ray,spheres,light,0);
 			}
 		}
-		return brightness;
+		return color;
 	}
-
-	public static double calculateRay(Ray ray, Sphere[] spheres, Point light, int bounces) {
-		if(bounces>3) {//end condition - last ray shadow check
-			//int hitSphere=-1;
+	public static Color calculateRay(Ray ray, Sphere[] spheres, Point light, int bounces) {
+		if(bounces>maxBounces) {//end condition - last ray shadow check
+			int hitSphere=-1;
 			double distanceToSphere=ray.distanceToSpheres(spheres);
 			if(distanceToSphere<Integer.MAX_VALUE-1) { //hit sphere
 				Vector vectorToSphere=ray.getDirection().multiply(distanceToSphere);
 				Point pointOnSphere=ray.getOrigin().add(vectorToSphere.toPoint());
-
+				for(int i=0;i<spheres.length;i++) {
+					Vector centerToPoint=new Vector(pointOnSphere.x-spheres[i].getCenter().x, pointOnSphere.y-spheres[i].getCenter().y, pointOnSphere.z-spheres[i].getCenter().z);
+					if(Math.abs(centerToPoint.magnitude()-spheres[i].getRadius())<.01) {//point is on sphere i
+						hitSphere=i;
+					}
+				}
 				if(checkShadow(pointOnSphere,spheres,light)) {
-					return 40;
+					return spheres[hitSphere].material.color.darker();
 				}else {
-					return 255;
+					return spheres[hitSphere].material.color.brighter();
 				}
 			}else {//did not hit sphere
-				return 0;
+				return Color.black;
 			}
 		}
 		//not end condition
 
-		double brightness=0;
+		Color color=new Color(0,0,0);
 		double distanceToSphere=ray.distanceToSpheres(spheres);
 		int hitSphere=-1;
 		if(distanceToSphere<Integer.MAX_VALUE-1) {//ray hits sphere
@@ -53,20 +58,20 @@ public class Engine {
 					hitSphere=i;
 				}
 			}
-			if(spheres[hitSphere].material.reflective) {
+			if(spheres[hitSphere].material.reflective) { //if material of hit sphere is reflective, recurse
 				Vector normal=new Vector(pointOnSphere.x-spheres[hitSphere].getCenter().x, pointOnSphere.y-spheres[hitSphere].getCenter().y, pointOnSphere.z-spheres[hitSphere].getCenter().z);
 				//pointOnSphere.add(normal.multiply(.01).toPoint());
 				Ray reflection=ray.calculateReflection(new Ray(spheres[hitSphere].getCenter(),normal), pointOnSphere);
-				brightness=calculateRay(reflection,spheres,light,bounces+1);
-			}else {
+				color=calculateRay(reflection,spheres,light,bounces+1);
+			}else {// if not reflective, check shadows and end.
 				if(checkShadow(pointOnSphere,spheres,light)) {
-					return 40;
+					return spheres[hitSphere].material.color.darker();
 				}else {
-					return 255;
+					return spheres[hitSphere].material.color.brighter();
 				}
 			}
 		}	
-		return brightness;
+		return color;
 	}
 
 	public static boolean checkShadow(Point pointOnSphere, Sphere[] spheres, Point light) {
@@ -79,11 +84,10 @@ public class Engine {
 		}
 	}
 
-	public static void draw(double[][] brightness) {
+	public static void draw(Color[][] colorIn) {
 		for(int i=0;i<renderWidth;i++) {
 			for(int j=0;j<renderHeight;j++) {
-				int brightnessInt=(int)brightness[i][j];
-				StdDraw.setPenColor(new Color(brightnessInt,brightnessInt,brightnessInt));
+				StdDraw.setPenColor(colorIn[i][j]);
 				StdDraw.point(i, j);
 			}
 		}
@@ -96,40 +100,53 @@ public class Engine {
 		StdDraw.setYscale(0,renderHeight);
 		StdDraw.setPenColor(new Color(0,0,0));
 		StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
-		StdDraw.setPenRadius(.005);
+		StdDraw.setPenRadius(0);
 		StdDraw.enableDoubleBuffering();
 
-		Point camLocation=new Point(0,0,-10);
-		Camera camera=new Camera(camLocation,renderWidth,renderHeight,6);
+		Point camLocation=new Point(0,0,-4);
+		Camera camera=new Camera(camLocation,renderWidth,renderHeight,4);
 
-		Point sphere1Center=new Point(0,0,0);
-		Material sphere1Material=new Material(true);
-		Sphere sphere1=new Sphere(sphere1Center,.15,sphere1Material);
-		Point sphere2Center=new Point(0,0,0);
-		Material sphere2Material=new Material(true);
-		Sphere sphere2=new Sphere(sphere2Center,.3,sphere2Material);
+		Point circlingSphereCenter=new Point(0,0,0);
+		Material circlingSphereMaterial=new Material(true);
+		Sphere circlingSphere=new Sphere(circlingSphereCenter,.15,circlingSphereMaterial);
+		
+		Point bouncingSphereCenter=new Point(0,0,0);
+		Material bouncingSphereMaterial=new Material(true);
+		Sphere bouncingSphere=new Sphere(bouncingSphereCenter,.3,bouncingSphereMaterial);
+		
 		Point floorSphereCenter=new Point(0,-1001,0);
 		Material floorMaterial=new Material(false);
 		Sphere floorSphere=new Sphere(floorSphereCenter,1000.2,floorMaterial);
-		Sphere[] spheres= {sphere1,sphere2,floorSphere};
-
+		floorSphere.setColor(0, 255, 255);
+		Point sideSphere1Center=new Point(-.5,0,0);
+		Material sideSphere1Material=new Material(false);
+		Sphere sideSphere1=new Sphere(sideSphere1Center,.1,sideSphere1Material);
+		sideSphere1.setColor(255, 255, 0);
+		Point sideSphere2Center=new Point(0.5,0,0);
+		Material sideSphere2Material=new Material(false);
+		Sphere sideSphere2=new Sphere(sideSphere2Center,.1,sideSphere2Material);
+		sideSphere2.setColor(255, 255, 0);
+		
+		Sphere[] spheres= {circlingSphere,bouncingSphere,floorSphere,sideSphere1,sideSphere2};
 
 		Point light=new Point(0,5,0);
 		double i=0;
 		while(true) {
-			System.out.println("Frame done");
+			//System.out.println("Frame done");
 			StdDraw.setPenColor(new Color(0,0,0));
 			StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
-			i+=.05;
+			i+=.02;
 			//light.setX(Math.cos(i));
 			//light.setZ(Math.sin(i+Math.PI)*2);
-			spheres[0].setX(Math.sin(i)/4);
-			spheres[0].setZ(Math.cos(i)/2);
-			spheres[0].setY(Math.sin(i)/2);
-			spheres[1].setY(Math.sin(2*i)/10);
+			spheres[0].setX(Math.sin(i+Math.PI)/2);
+			spheres[0].setZ(Math.cos(i+Math.PI)/2);
+			spheres[0].setY(Math.sin(2*i)/2);
+			spheres[1].setY(Math.sin(4*i)/10);
+			spheres[3].setZ(Math.sin(i)/3);
+			spheres[4].setZ(Math.sin(i+Math.PI)/3);
 			Ray[][] cameraRays=camera.generateRays();
-			double[][]brightness=calculateRays(cameraRays,spheres,light);
-			draw(brightness);
+			Color[][]color=calculateRays(cameraRays,spheres,light);
+			draw(color);
 		}
 	}
 }

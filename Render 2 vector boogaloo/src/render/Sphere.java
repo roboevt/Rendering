@@ -38,5 +38,7 @@ public class Sphere {
 		this.radius = radius;
 	}
 	
-	
+	public void setColor(int r, int g, int b) {
+		this.material.setColor(r, g, b);
+	}
 }
