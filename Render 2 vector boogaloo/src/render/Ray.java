@@ -58,13 +58,11 @@ public class Ray {
 		int i=-1;
 		boolean skip=false;
 		for(Sphere sphere:spheres) {
+			
 			i++;
 			skip=false;
 			Vector L = this.origin.subtractToVector(sphere.getCenter()); //is this right? shouldn't the vector go the other way?
-			//L=sphere.getCenter().subtractToVector(this.origin);
-			//System.out.println("L: "+L.toString());
 			double tToCenter=L.dot(this.direction.normalize());
-			//System.out.println("distance to center: "+tToCenter);
 			if(tToCenter<0) { //sphere is behind ray
 				//System.out.println("sphere is behind ray");
 				distances[i]=Integer.MAX_VALUE;

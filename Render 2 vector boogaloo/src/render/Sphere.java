@@ -24,7 +24,7 @@ public class Sphere {
 			boolean reflective=true;
 			Point center=new Point(2.5-5*Math.random(),y,2.5-5*Math.random());
 			spheres[i]=new Sphere(center,radius,new Material(reflective));
-			if(Math.random()>0.5) {
+			if(Math.random()>.5) {//number represents probability of reflective sphere
 				reflective=false;
 				color=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
 				spheres[i].setColor(color);

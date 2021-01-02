@@ -6,7 +6,7 @@ public class Vector {
 	public double z;
 	
 	public Vector(double x, double y, double z) {
-		super();
+		//Engine.count++;
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -60,8 +60,29 @@ public class Vector {
 		return Math.sqrt(Math.pow(this.x, 2)+Math.pow(this.y, 2)+Math.pow(this.z, 2));
 	}
 	
+	public double magnitudeSquared() {
+		return Math.pow(this.x, 2)+Math.pow(this.y, 2)+Math.pow(this.z, 2);
+	}
+	
 	public Vector normalize() {
-		return new Vector(this.x/this.magnitude(),this.y/this.magnitude(),this.z/this.magnitude());
+		double magnitude=this.magnitude();
+		return new Vector(this.x/magnitude,this.y/magnitude,this.z/magnitude);	
+	}
+	
+	public static double invSqrt(double x) {
+	    double xhalf = 0.5d * x;
+	    long i = Double.doubleToLongBits(x);
+	    i = 0x5fe6ec85e7de30daL - (i >> 1);
+	    x = Double.longBitsToDouble(i);
+	    x *= (1.5d - xhalf * x * x);
+	    return x;
+	}
+	
+	public Vector fnormalize() {
+		//double magnitudeSquared=this.magnitudeSquared();
+		double magnitudeSquared=this.dot(this);
+		double inverseSqrt=invSqrt(magnitudeSquared);
+		return new Vector(this.x*inverseSqrt,this.y*inverseSqrt,this.z*inverseSqrt);
 	}
 	
 	public double dot(Vector vector) {
@@ -77,8 +98,5 @@ public class Vector {
 	}
 	
 	public static void main(String[] args) {
-		Vector vector=new Vector(2,3,4);
-		System.out.println(vector.toString());
-		System.out.println(vector.normalize().toString());
 	}
 }

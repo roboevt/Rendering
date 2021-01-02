@@ -68,8 +68,9 @@ public class Camera {
 				double yRot1=(xRot*Math.sin(Math.toRadians(zAngle)))+(yRot*Math.cos(Math.toRadians(zAngle)));
 				double zRot1=zRot;
 				
+				//this one is wrong...
 				double xRot2=(zRot1*Math.cos(Math.toRadians(yAngle)))-(xRot1*Math.sin(Math.toRadians(yAngle)));
-				double zRot2=(zRot1*Math.sin(Math.toRadians(yAngle)))+(zRot1*Math.cos(Math.toRadians(yAngle)));
+				double zRot2=(zRot1*Math.sin(Math.toRadians(yAngle)))+(xRot1*Math.cos(Math.toRadians(yAngle)));
 				double yRot2=yRot1;
 				ray[i][j]=new Ray(location,new Vector(xRot2,yRot2,zRot2));
 				ray[i][j].setDirection(ray[i][j].getDirection().normalize());

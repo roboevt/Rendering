@@ -4,12 +4,13 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 
 public class Engine {
-	static int renderWidth=400;
-	static int renderHeight=400;
-	static int renderScale=2;
-	static int maxBounces=5;
+	static int renderWidth=200;
+	static int renderHeight=200;
+	static int renderScale=4;
+	static int maxBounces=10;
 	static double speed=.1;
-	
+	public static int count=0;
+
 	public static Color[][] calculateRays(Ray[][] cameraRays, Sphere[] spheres, Point light){
 		Color[][] color=new Color[renderWidth][renderHeight];
 		int x=-1;
@@ -46,7 +47,7 @@ public class Engine {
 				return Color.black;
 			}
 		}
-		
+
 		//not end condition
 		Color color=new Color(0,0,0);
 		double distanceToSphere=ray.distanceToSpheres(spheres);
@@ -62,7 +63,7 @@ public class Engine {
 			}
 			if(spheres[hitSphere].material.reflective) { //if material of hit sphere is reflective, recurse
 				Vector normal=new Vector(pointOnSphere.x-spheres[hitSphere].getCenter().x, pointOnSphere.y-spheres[hitSphere].getCenter().y, pointOnSphere.z-spheres[hitSphere].getCenter().z);
-				//pointOnSphere.add(normal.multiply(.01).toPoint());
+				//pointOnSphere.add(normal.multiply(.1).toPoint());
 				Ray reflection=ray.calculateReflection(new Ray(spheres[hitSphere].getCenter(),normal), pointOnSphere);
 				color=calculateRay(reflection,spheres,light,bounces+1);
 			}else {// if not reflective, check shadows and end.
@@ -95,7 +96,7 @@ public class Engine {
 		}
 		StdDraw.show();
 	}
-	
+
 	private static boolean checkFor(int key) {
 		if (StdDraw.isKeyPressed(key)) {
 			return true;
@@ -114,23 +115,25 @@ public class Engine {
 		StdDraw.setPenRadius(0);
 		StdDraw.enableDoubleBuffering();
 		double camX=0;
-		double camY=4;
+		double camY=1;
 		double camZ=-8;
-		
-		double camRotX=30;
+
+		double camRotX=0;
 		double camRotY=90;
 		double camRotZ=0;
+
+		double camZoom=3;
 		Point camLocation=new Point(camX,camY,camZ);
-		Camera camera=new Camera(camLocation,camRotX,camRotY,camRotZ,renderWidth,renderHeight,3);
+		Camera camera=new Camera(camLocation,camRotX,camRotY,camRotZ,renderWidth,renderHeight,camZoom);
 
 		/*Point circlingSphereCenter=new Point(0,0,0);
 		Material circlingSphereMaterial=new Material(true);
 		Sphere circlingSphere=new Sphere(circlingSphereCenter,.15,circlingSphereMaterial);
-		
+
 		Point bouncingSphereCenter=new Point(0,0,0);
 		Material bouncingSphereMaterial=new Material(true);
 		Sphere bouncingSphere=new Sphere(bouncingSphereCenter,.3,bouncingSphereMaterial);
-		
+
 		Point floorSphereCenter=new Point(0,-1001,0);
 		Material floorMaterial=new Material(false);
 		Sphere floorSphere=new Sphere(floorSphereCenter,1000,floorMaterial);
@@ -143,53 +146,65 @@ public class Engine {
 		Material sideSphere2Material=new Material(false);
 		Sphere sideSphere2=new Sphere(sideSphere2Center,.1,sideSphere2Material);
 		sideSphere2.setColor(255, 0, 255);
-		
+
 		Sphere[] spheres= {circlingSphere,bouncingSphere,floorSphere,sideSphere1,sideSphere2};
-	    */
-		
+		 */
+
 		Sphere[] spheres=Sphere.generateFloorSpheres(10);
 		Point light=new Point(0,5,0);
-		double i=0;
+		//double i=0;
 		while(true) {
 			//System.out.println("Frame done");
 			StdDraw.setPenColor(new Color(0,0,0));
 			StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
-			i+=.01;
+			//i+=.01;
 			if (checkFor(KeyEvent.VK_W)) {
-				camZ+=speed;
+				camZ+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camX+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
 			}
 			if (checkFor(KeyEvent.VK_S)) {
-				camZ-=speed;
+				camZ-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camX-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
 			}
 			if (checkFor(KeyEvent.VK_A)) {
-				camX+=speed;
+				camX+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camZ-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
 			}
 			if (checkFor(KeyEvent.VK_D)) {
-				camX-=speed;
+				camX-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camZ+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
 			}
 			if (checkFor(KeyEvent.VK_SHIFT)) {
-				camY+=speed;
+				camY+=speed*camY/2;
 			}
 			if (checkFor(KeyEvent.VK_CONTROL)) {
-				camY-=speed;
+				camY-=speed*camY/2;
 			}
-			
+
 			if (checkFor(KeyEvent.VK_UP)) {
-				camRotX-=speed*10;
+				camRotX-=speed*30/camZoom;
 			}
 			if (checkFor(KeyEvent.VK_DOWN)) {
-				camRotX+=speed*10;
-			}/*
+				camRotX+=speed*30/camZoom;
+			}
+			if (checkFor(KeyEvent.VK_R)) {
+				camZoom+=speed*camZoom;
+			}
+			if (checkFor(KeyEvent.VK_F)) {
+				camZoom-=speed*camZoom;
+			}
+			
 			if (checkFor(KeyEvent.VK_LEFT)) {
-				camRotY-=1;
+				camRotY-=speed*30/camZoom;
 			}
 			if (checkFor(KeyEvent.VK_RIGHT)) {
-				camRotY+=1;
-			}*/
+				camRotY+=speed*30/camZoom;
+			}
 			camera.setLocation(new Point(camX,camY,camZ));
 			camera.setxAngle(camRotX);
 			camera.setyAngle(camRotY);
 			camera.setzAngle(camRotZ);
+			camera.setZoom(camZoom);
 			//light.setX(Math.cos(i));
 			//light.setZ(Math.sin(i+Math.PI)*2);
 			/*spheres[0].setX(Math.sin(i+Math.PI)/2);
@@ -198,12 +213,25 @@ public class Engine {
 			spheres[1].setY(Math.sin(4*i)/10);
 			spheres[3].setZ(Math.sin(i)/3);
 			spheres[4].setZ(Math.sin(i+Math.PI)/3);
-			*/
+			 */
 			//camera.setxAngle(Math.sin(i)*16);
 			//camLocation.setY(Math.sin(i)/1);
+
+			long startTime = System.currentTimeMillis();
+
 			Ray[][] cameraRays=camera.generateRays();
 			Color[][]color=calculateRays(cameraRays,spheres,light);
 			draw(color);
+
+			System.out.println(count);
+			long endTime = System.currentTimeMillis();
+
+			System.out.println(1/((endTime - startTime)/1000.0) + " fps");
+			StdDraw.setPenColor(Color.white);
+			StdDraw.textLeft(10, 10, 1/((endTime - startTime)/1000.0) + " fps");
+			StdDraw.show();
+			
+			
 		}
 	}
 }
