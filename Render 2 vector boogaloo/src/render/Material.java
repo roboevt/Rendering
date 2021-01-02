@@ -22,4 +22,7 @@ public class Material {
 		}
 		return darker;
 	}
+	public Color scaleColor(double brightness) {
+		return new Color((int)(color.getRed()*brightness),(int)(color.getGreen()*brightness),(int)(color.getBlue()*brightness));
+	}
 }
