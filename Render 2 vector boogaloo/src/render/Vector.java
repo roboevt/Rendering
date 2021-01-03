@@ -57,6 +57,7 @@ public class Vector {
 	}
 	
 	public double magnitude() {
+		Engine.magnitudeCount++;
 		return Math.sqrt(Math.pow(this.x, 2)+Math.pow(this.y, 2)+Math.pow(this.z, 2));
 	}
 	

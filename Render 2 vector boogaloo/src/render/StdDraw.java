@@ -1006,7 +1006,7 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 	 * @param  y the <em>y</em>-coordinate of the pixel
 	 * @throws IllegalArgumentException if {@code x} or {@code y} is either NaN or infinite
 	 */
-	private static void pixel(double x, double y) {
+	public static void pixel(double x, double y) {
 		validate(x, "x");
 		validate(y, "y");
 		offscreen.fillRect((int) Math.round(scaleX(x)), (int) Math.round(scaleY(y)), 1, 1);

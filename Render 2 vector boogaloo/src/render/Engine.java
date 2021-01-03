@@ -4,12 +4,12 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 
 public class Engine {
-	static int renderWidth=400;
-	static int renderHeight=400;
-	static int renderScale=1;
-	static int maxBounces=5;
+	static int renderWidth;
+	static int renderHeight;
+	static int renderScale;
+	static int maxBounces;
 	static double speed=.2;
-	public static int count=0;
+	public static int magnitudeCount=0;
 	public double camX;
 	public double camY;
 	public double camZ;
@@ -20,8 +20,12 @@ public class Engine {
 	public Camera camera;
 	public Sphere[] spheres;
 	public Point light;
-	
-	public Engine() {
+
+	public Engine(int renderSize, int renderScale, int maxBounces) {
+		this.renderWidth=renderSize;
+		this.renderHeight=renderSize;
+		this.renderScale=renderScale;
+		this.maxBounces=maxBounces-1;
 		StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
 		StdDraw.setXscale(0,renderWidth);
 		StdDraw.setYscale(0,renderHeight);
@@ -45,10 +49,12 @@ public class Engine {
 		//double i=0;
 	}
 
-	private static Color[][] calculateRays(Ray[][] cameraRays, Sphere[] spheres, Point light){
+	public static Color[][] calculateRays(Ray[][] cameraRays, Sphere[] spheres, Point light){
+		long startTime = System.currentTimeMillis();
 		Color[][] color=new Color[renderWidth][renderHeight];
 		int x=-1;
 		int y=0;
+
 		for(Ray[] array : cameraRays) {
 			y=-1;
 			x++;
@@ -57,9 +63,11 @@ public class Engine {
 				color[x][y]=calculateRay(ray,spheres,light,0);
 			}
 		}
+		long endTime = System.currentTimeMillis();
+		System.out.println("calculateRays: "+(endTime - startTime) + " milliseconds");
 		return color;
 	}
-	private static Color calculateRay(Ray ray, Sphere[] spheres, Point light, int bounces) {
+	private static Color calculateRay(Ray ray, Sphere[] spheres, Point light, int bounces) { // the main attraction
 		if(bounces>maxBounces) {//end condition - last ray shadow check
 			int hitSphere=-1;
 			double distanceToSphere=ray.distanceToSpheres(spheres);
@@ -81,6 +89,7 @@ public class Engine {
 				return Color.black;
 			}
 		}
+
 
 		//not end condition
 		Color color=new Color(0,0,0);
@@ -106,9 +115,13 @@ public class Engine {
 				}else {
 					double brightness=checkDiffuse(pointOnSphere,spheres[hitSphere],light,ray);
 					return spheres[hitSphere].material.scaleColor(brightness);
+					//return spheres[hitSphere].material.color;
 				}
 			}
 		}	
+
+
+
 		return color;
 	}
 
@@ -121,7 +134,7 @@ public class Engine {
 			return false; //in light
 		}
 	}
-	
+
 	private static double checkDiffuse(Point pointOnSphere, Sphere sphere, Point light, Ray ray) {
 		Vector lightVector=new Vector(light.x-pointOnSphere.x,light.y-pointOnSphere.y,light.z-pointOnSphere.z);
 		Vector normal=new Vector(pointOnSphere.x-sphere.getCenter().x, pointOnSphere.y-sphere.getCenter().y, pointOnSphere.z-sphere.getCenter().z);
@@ -129,14 +142,22 @@ public class Engine {
 		return Math.cos(angle);
 	}
 
-	private static void draw(Color[][] colorIn) {
+	private static void draw(Color[][] colorIn,double fps) {
+		long startTime = System.currentTimeMillis();
+		StdDraw.enableDoubleBuffering();
 		for(int i=0;i<renderWidth;i++) {
 			for(int j=0;j<renderHeight;j++) {
-				StdDraw.setPenColor(colorIn[i][j]);
-				StdDraw.point(i, j);
+				if(!colorIn[i][j].equals(Color.black)) {
+					StdDraw.setPenColor(colorIn[i][j]);
+					StdDraw.pixel(i, j); //can be changed to point too
+				}
 			}
 		}
+		StdDraw.setPenColor(Color.white);
+		StdDraw.textLeft(10, renderHeight-10,"fps: "+fps+"");
 		StdDraw.show();
+		long endTime = System.currentTimeMillis();
+		System.out.println("Draw time: "+((endTime - startTime)) + " milliseconds");
 	}
 
 	private static boolean checkFor(int key) {
@@ -149,10 +170,11 @@ public class Engine {
 	}
 
 	public void calculateFrame() {
+		long startTime = System.currentTimeMillis();
+		magnitudeCount=0;
 		//System.out.println("Frame done");
-		StdDraw.setPenColor(new Color(0,0,0));
+		StdDraw.setPenColor(StdDraw.BLACK);
 		StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
-		//i+=.01;
 		if (checkFor(KeyEvent.VK_W)) {
 			camZ+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
 			camX+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
@@ -200,35 +222,25 @@ public class Engine {
 		camera.setyAngle(camRotY);
 		camera.setzAngle(camRotZ);
 		camera.setZoom(camZoom);
-		//light.setX(Math.cos(i));
-		//light.setZ(Math.sin(i+Math.PI)*2);
-		/*spheres[0].setX(Math.sin(i+Math.PI)/2);
-		spheres[0].setZ(Math.cos(i+Math.PI)/2);
-		spheres[0].setY(Math.sin(2*i)/2);
-		spheres[1].setY(Math.sin(4*i)/10);
-		spheres[3].setZ(Math.sin(i)/3);
-		spheres[4].setZ(Math.sin(i+Math.PI)/3);
-		 */
-		//camera.setxAngle(Math.sin(i)*16);
-		//camLocation.setY(Math.sin(i)/1);
 
-		long startTime = System.currentTimeMillis();
+
 
 		Ray[][] cameraRays=camera.generateRays();
 		Color[][]color=calculateRays(cameraRays,spheres,light);
-		draw(color);
+		long endTime = System.currentTimeMillis();
+		double fps=1/((endTime-startTime)/1000.0);
+		draw(color,fps);
 
 		//System.out.println(count);
-		long endTime = System.currentTimeMillis();
-
-		//System.out.println(1/((endTime - startTime)/1000.0) + " fps");
-		StdDraw.setPenColor(Color.white);
-		StdDraw.textLeft(10, renderHeight-10,"fps: "+ 1/((endTime - startTime)/1000.0)+"");
-		StdDraw.textLeft(10, renderHeight-20, "zoom: "+camZoom);
-		StdDraw.show();
-	}
-	
-	public static void main(String[] args) {
 		
+		//StdDraw.setPenColor(Color.white);
+		//StdDraw.textLeft(10, renderHeight-10,"fps: "+ 1/((endTime - startTime)/1000.0)+"");
+		//StdDraw.textLeft(10, renderHeight-20, "zoom: "+camZoom);
+		//StdDraw.textLeft(10, renderHeight-30,"million magnitude calculations: "+magnitudeCount/1000000);
+		//StdDraw.show();
+	}
+
+	public static void main(String[] args) {
+
 	}
 }
