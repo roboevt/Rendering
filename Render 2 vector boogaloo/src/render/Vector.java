@@ -57,11 +57,11 @@ public class Vector {
 	}
 	
 	public double magnitude() {
-		Engine.magnitudeCount++;
+		//Engine.magnitudeCount++;
 		return Math.sqrt(Math.pow(this.x, 2)+Math.pow(this.y, 2)+Math.pow(this.z, 2));
 	}
 	
-	public double magnitudeSquared() {
+	public double magnitudeSqraured() {
 		return Math.pow(this.x, 2)+Math.pow(this.y, 2)+Math.pow(this.z, 2);
 	}
 	
@@ -70,7 +70,7 @@ public class Vector {
 		return new Vector(this.x/magnitude,this.y/magnitude,this.z/magnitude);	
 	}
 	
-	public static double invSqrt(double x) {
+	public static double fastInvSqrt(double x) {
 	    double xhalf = 0.5d * x;
 	    long i = Double.doubleToLongBits(x);
 	    i = 0x5fe6ec85e7de30daL - (i >> 1);
@@ -79,10 +79,10 @@ public class Vector {
 	    return x;
 	}
 	
-	public Vector fnormalize() {
+	public Vector fastnormalize() {
 		//double magnitudeSquared=this.magnitudeSquared();
 		double magnitudeSquared=this.dot(this);
-		double inverseSqrt=invSqrt(magnitudeSquared);
+		double inverseSqrt=fastInvSqrt(magnitudeSquared);
 		return new Vector(this.x*inverseSqrt,this.y*inverseSqrt,this.z*inverseSqrt);
 	}
 	

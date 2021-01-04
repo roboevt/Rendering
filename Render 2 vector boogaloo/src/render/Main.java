@@ -1,45 +1,199 @@
 package render;
 
-import java.awt.Canvas;
 import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 
-import javax.swing.JFrame;
-
-public class Main extends Canvas{
+public class Main {
+	public static double camX;
+	public static double camY;
+	public static double camZ;
+	public static double speed=.1;
+	public static Point camLocation=new Point(0,1,-6);
+	public static double camRotX;
+	public static double camRotY;
+	public static double camRotZ;
+	public static Vector camRotation=new Vector(0,90,0);
+	public static double camZoom;
+	public static boolean done1;
+	public static boolean done2;
+	public static boolean done3;
+	public static boolean done4;
+	public static boolean doneAll;
+	public static Color[][] color1;
+	public static Color[][] color2;
+	public static Color[][] color3;
+	public static Color[][] color4;
 
 	public static void main(String[] args) {
-		/*JFrame frame = new JFrame("Spheres rendering");
-		Canvas canvas = new Main();
-		canvas.setSize(800, 800);
-		System.out.println(frame.isDoubleBuffered());
-		frame.dou
-		frame.add(canvas);
-		frame.pack();
-		frame.setVisible(true);
-		 */
-		Engine engine=new Engine(200,5,5);
+		camX=0;
+		camY=1;
+		camZ=-6;
+		camRotX=-40;
+		camRotY=90;
+		camRotZ=0;
+		camZoom=1;
+		camLocation.setX(camX);
+		camLocation.setY(camY);
+		camLocation.setZ(camZ);
+		camRotation.setX(camRotX);
+		camRotation.setY(camRotY);
+		camRotation.setX(camRotZ);
+		color1=new Color[400][400];
+		color2=new Color[400][400];
+		color3=new Color[400][400];
+		color4=new Color[400][400];
+		done1=false;
+		done2=false;
+		done3=false;
+		done4=false;
+		doneAll=true;
+		Engine engine1=new Engine(400,2,5);
+		Engine engine2=new Engine(400,2,5);
+		Engine engine3=new Engine(400,2,5);
+		Engine engine4=new Engine(400,2,5);
+		Thread t1=new Thread(new MyThread(engine1,1));
+		Thread t2=new Thread(new MyThread(engine2,2));
+		Thread t3=new Thread(new MyThread(engine3,3));
+		Thread t4=new Thread(new MyThread(engine4,4));
+		t1.start();
+		t2.start();
+		t3.start();
+		t4.start();
 		while(true) {
-			long startTime = System.currentTimeMillis();
-			System.out.println("Frame start");
-			engine.calculateFrame();
-			long endTime = System.currentTimeMillis();
-			System.out.println("Frame end, total time: "+((endTime - startTime)) + " milliseconds");
-			System.out.println();
+			while(done1==false&&done2==false&&done3==false&&done4==false) {
+				StdDraw.pause(10);
+			}
+			StdDraw.setPenColor();
+			StdDraw.filledRectangle(200,200,400,400);
+			done1=false;
+			done2=false;
+			done3=false;
+			done4=false;
+			doneAll=true;
+			engine1.draw(color1);
+			engine1.draw(color2);
+			engine1.draw(color3);
+			engine1.draw(color4);
+			StdDraw.show();
+			
+			doneAll=false;
+			
+			if (checkFor(KeyEvent.VK_W)) {
+				camZ+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camX+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+			}
+			if (checkFor(KeyEvent.VK_S)) {
+				camZ-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camX-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+			}
+			if (checkFor(KeyEvent.VK_A)) {
+				camX+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camZ-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+			}
+			if (checkFor(KeyEvent.VK_D)) {
+				camX-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camZ+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+			}
+			if (checkFor(KeyEvent.VK_SHIFT)) {
+				camY+=speed*camY/2;
+			}
+			if (checkFor(KeyEvent.VK_CONTROL)) {
+				camY-=speed*camY/2;
+			}
+
+			if (checkFor(KeyEvent.VK_UP)) {
+				camRotX-=speed*30/camZoom;
+			}
+			if (checkFor(KeyEvent.VK_DOWN)) {
+				camRotX+=speed*30/camZoom;
+			}
+			if (checkFor(KeyEvent.VK_R)) {
+				if(camZoom<10) {
+					camZoom+=speed*camZoom;
+				}
+			}
+			if (checkFor(KeyEvent.VK_F)) {
+				if(camZoom>.25) {
+					camZoom-=speed*camZoom;
+				}
+			}
+
+			if (checkFor(KeyEvent.VK_LEFT)) {
+				camRotY-=speed*30/camZoom;
+			}
+			if (checkFor(KeyEvent.VK_RIGHT)) {
+				camRotY+=speed*30/camZoom;
+			}
+			camLocation.setX(camX);
+			camLocation.setY(camY);
+			camLocation.setZ(camZ);
+			camRotation.setX(camRotX);
+			camRotation.setY(camRotY);
+			camRotation.setX(camRotZ);
+		}
+		//System.out.println("here");
+		/*while(true) {
+			if (checkFor(KeyEvent.VK_W)) {
+				camZ+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camX+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+			}
+			if (checkFor(KeyEvent.VK_S)) {
+				camZ-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camX-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+			}
+			if (checkFor(KeyEvent.VK_A)) {
+				camX+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camZ-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+			}
+			if (checkFor(KeyEvent.VK_D)) {
+				camX-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+				camZ+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+			}
+			if (checkFor(KeyEvent.VK_SHIFT)) {
+				camY+=speed*camY/2;
+			}
+			if (checkFor(KeyEvent.VK_CONTROL)) {
+				camY-=speed*camY/2;
+			}
+
+			if (checkFor(KeyEvent.VK_UP)) {
+				camRotX-=speed*30/camZoom;
+			}
+			if (checkFor(KeyEvent.VK_DOWN)) {
+				camRotX+=speed*30/camZoom;
+			}
+			if (checkFor(KeyEvent.VK_R)) {
+				if(camZoom<10) {
+					camZoom+=speed*camZoom;
+				}
+			}
+			if (checkFor(KeyEvent.VK_F)) {
+				if(camZoom>.25) {
+					camZoom-=speed*camZoom;
+				}
+			}
+
+			if (checkFor(KeyEvent.VK_LEFT)) {
+				camRotY-=speed*30/camZoom;
+			}
+			if (checkFor(KeyEvent.VK_RIGHT)) {
+				camRotY+=speed*30/camZoom;
+			}
+			camLocation.setX(camX);
+			camLocation.setY(camY);
+			camLocation.setZ(camZ);
+			camRotation.setX(camRotX);
+			camRotation.setY(camRotY);
+			camRotation.setX(camRotZ);
+		}*/
+	}
+
+	private static boolean checkFor(int key) {
+		if (StdDraw.isKeyPressed(key)) {
+			return true;
+		}
+		else {
+			return false;
 		}
 	}
-/*
-	public void paint(Graphics g) {
-		Engine engine=new Engine(800,1,5);
-		Ray[][] cameraRays=engine.camera.generateRays();
-		Color[][]color=Engine.calculateRays(cameraRays,engine.spheres,engine.light);
-
-		for(int i=0;i<800;i++) {
-			for(int j=0;j<800;j++) {
-				g.setColor(color[i][j]);
-				g.drawLine(i,j,i,j);
-			}
-		}
-	}*/
 }
