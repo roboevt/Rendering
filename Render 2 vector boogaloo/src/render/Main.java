@@ -23,8 +23,19 @@ public class Main {
 	public static Color[][] color2;
 	public static Color[][] color3;
 	public static Color[][] color4;
+	public static int renderWidth=400;
+	public static int renderHeight=400;
+	public static int renderScale=2;
 
 	public static void main(String[] args) {
+		StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
+		StdDraw.setXscale(0,renderWidth);
+		StdDraw.setYscale(0,renderHeight);
+		StdDraw.setPenColor(new Color(0,0,0));
+		StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
+		StdDraw.setPenRadius(0);
+		StdDraw.enableDoubleBuffering();
+		
 		camX=0;
 		camY=1;
 		camZ=-6;
@@ -47,14 +58,14 @@ public class Main {
 		done3=false;
 		done4=false;
 		doneAll=true;
-		Engine engine1=new Engine(400,2,5);
-		Engine engine2=new Engine(400,2,5);
-		Engine engine3=new Engine(400,2,5);
-		Engine engine4=new Engine(400,2,5);
-		Thread t1=new Thread(new MyThread(engine1,1));
-		Thread t2=new Thread(new MyThread(engine2,2));
-		Thread t3=new Thread(new MyThread(engine3,3));
-		Thread t4=new Thread(new MyThread(engine4,4));
+		//Engine engine1=new Engine(400,2,5);
+		//Engine engine2=new Engine(400,2,5);
+		//Engine engine3=new Engine(400,2,5);
+		//Engine engine4=new Engine(400,2,5);
+		Thread t1=new Thread(new MyThread(1));
+		Thread t2=new Thread(new MyThread(2));
+		Thread t3=new Thread(new MyThread(3));
+		Thread t4=new Thread(new MyThread(4));
 		t1.start();
 		t2.start();
 		t3.start();
@@ -70,10 +81,10 @@ public class Main {
 			done3=false;
 			done4=false;
 			doneAll=true;
-			engine1.draw(color1);
-			engine1.draw(color2);
-			engine1.draw(color3);
-			engine1.draw(color4);
+			Engine.draw(color1,400,400);
+			Engine.draw(color2,400,400);
+			Engine.draw(color3,400,400);
+			Engine.draw(color4,400,400);
 			StdDraw.show();
 			
 			doneAll=false;

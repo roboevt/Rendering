@@ -4,11 +4,11 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 
 public class Engine {
-	static int renderWidth;
-	static int renderHeight;
-	static int renderScale;
-	static int maxBounces;
-	static double speed=.2;
+	public int renderWidth;
+	public int renderHeight;
+	public int renderScale;
+	public int maxBounces;
+	public double speed=.2;
 	public static int magnitudeCount=0;
 	public double camX;
 	public double camY;
@@ -27,13 +27,13 @@ public class Engine {
 		this.renderHeight=renderSize;
 		this.renderScale=renderScale;
 		this.maxBounces=maxBounces-1;
-		StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
+		/*StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
 		StdDraw.setXscale(0,renderWidth);
 		StdDraw.setYscale(0,renderHeight);
 		StdDraw.setPenColor(new Color(0,0,0));
 		StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
 		StdDraw.setPenRadius(0);
-		StdDraw.enableDoubleBuffering();
+		StdDraw.enableDoubleBuffering();*/
 		camX=0;
 		camY=1;
 		camZ=-8;
@@ -51,7 +51,7 @@ public class Engine {
 		//double i=0;
 	}
 
-	public static Color[][] calculateRays(Ray[][] cameraRays,int startX, int endX, int startY, int endY, Sphere[] spheres, Point light){
+	public  Color[][] calculateRays(Ray[][] cameraRays,int startX, int endX, int startY, int endY, Sphere[] spheres, Point light){
 		Color[][] colorOut=new Color[renderWidth][renderHeight];
 		for(int i=startX;i<endX;i++) {
 			for(int j=startY;j<endY;j++) {
@@ -62,7 +62,7 @@ public class Engine {
 		
 	}
 
-	private static Color calculateRay(Ray ray, Sphere[] spheres, Point light, int bounces) { // the main attraction
+	private  Color calculateRay(Ray ray, Sphere[] spheres, Point light, int bounces) { // the main attraction
 		Color color=new Color(0,0,0);
 		double distanceToSphere=ray.distanceToSpheres(spheres);
 		int hitSphere=1;
@@ -111,7 +111,7 @@ public class Engine {
 		return Math.cos(angle);
 	}
 
-	public void draw(Color[][] colorIn) {
+	public static void draw(Color[][] colorIn, int renderWidth, int renderHeight) {
 		long startTime = System.currentTimeMillis();
 		StdDraw.enableDoubleBuffering();
 		for(int i=0;i<renderWidth;i++) {
