@@ -23,9 +23,9 @@ public class Main {
 	public static Color[][] color2;
 	public static Color[][] color3;
 	public static Color[][] color4;
-	public static int renderWidth=400;
-	public static int renderHeight=400;
-	public static int renderScale=2;
+	public static int renderWidth=300;
+	public static int renderHeight=300;
+	public static int renderScale=3;
 
 	public static void main(String[] args) {
 		StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
@@ -49,20 +49,16 @@ public class Main {
 		camRotation.setX(camRotX);
 		camRotation.setY(camRotY);
 		camRotation.setX(camRotZ);
-		color1=new Color[400][400];
-		color2=new Color[400][400];
-		color3=new Color[400][400];
-		color4=new Color[400][400];
+		color1=new Color[renderWidth][renderHeight];
+		color2=new Color[renderWidth][renderHeight];
+		color3=new Color[renderWidth][renderHeight];
+		color4=new Color[renderWidth][renderHeight];
 		done1=false;
 		done2=false;
 		done3=false;
 		done4=false;
 		doneAll=true;
-		//Engine engine1=new Engine(400,2,5);
-		//Engine engine2=new Engine(400,2,5);
-		//Engine engine3=new Engine(400,2,5);
-		//Engine engine4=new Engine(400,2,5);
-		Sphere spheres[]=Sphere.generateFloorSpheres(10);
+		Sphere spheres[]=Sphere.generateFloorSpheres(2);
 		Thread t1=new Thread(new MyThread(1,spheres));
 		Thread t2=new Thread(new MyThread(2,spheres));
 		Thread t3=new Thread(new MyThread(3,spheres));
@@ -73,22 +69,29 @@ public class Main {
 		t4.start();
 		while(true) {
 			while(done1==false&&done2==false&&done3==false&&done4==false) {
-				StdDraw.pause(1);
+				try {
+					Thread.currentThread().sleep(1);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
+			doneAll=true;
+			
+			//System.out.println("All done \n");
+			
 			StdDraw.setPenColor();
-			StdDraw.filledRectangle(200,200,400,400);
+			StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
+			Engine.draw(color1,renderWidth,renderHeight);
+			Engine.draw(color2,renderWidth,renderHeight);
+			Engine.draw(color3,renderWidth,renderHeight);
+			Engine.draw(color4,renderWidth,renderHeight);
+			StdDraw.show();
+			
 			done1=false;
 			done2=false;
 			done3=false;
 			done4=false;
-			doneAll=true;
-			Engine.draw(color1,400,400);
-			Engine.draw(color2,400,400);
-			Engine.draw(color3,400,400);
-			Engine.draw(color4,400,400);
-			StdDraw.show();
-			
-			doneAll=false;
 			
 			if (checkFor(KeyEvent.VK_W)) {
 				camZ+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
@@ -140,7 +143,8 @@ public class Main {
 			camLocation.setZ(camZ);
 			camRotation.setX(camRotX);
 			camRotation.setY(camRotY);
-			camRotation.setX(camRotZ);
+			camRotation.setZ(camRotZ);
+			
 		}
 		//System.out.println("here");
 		/*while(true) {

@@ -113,8 +113,6 @@ public class Engine {
 	}
 
 	public static void draw(Color[][] colorIn, int renderWidth, int renderHeight) {
-		long startTime = System.currentTimeMillis();
-		StdDraw.enableDoubleBuffering();
 		for(int i=0;i<renderWidth;i++) {
 			for(int j=0;j<renderHeight;j++) {
 				if(colorIn[i][j]!=null) {
@@ -125,9 +123,6 @@ public class Engine {
 				}
 			}
 		}
-		//StdDraw.show();
-		long endTime = System.currentTimeMillis();
-		//System.out.println("Draw time: "+((endTime - startTime)) + " milliseconds");
 	}
 
 	private static boolean checkFor(int key) {
