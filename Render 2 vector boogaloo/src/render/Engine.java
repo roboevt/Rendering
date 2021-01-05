@@ -22,11 +22,12 @@ public class Engine {
 	public Point light;
 	Ray[][] cameraRays;
 
-	public Engine(int renderSize, int renderScale, int maxBounces) {
+	public Engine(int renderSize, int renderScale, int maxBounces, Sphere[] spheres) {
 		this.renderWidth=renderSize;
 		this.renderHeight=renderSize;
 		this.renderScale=renderScale;
 		this.maxBounces=maxBounces-1;
+		this.spheres=spheres;
 		/*StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
 		StdDraw.setXscale(0,renderWidth);
 		StdDraw.setYscale(0,renderHeight);
@@ -45,7 +46,7 @@ public class Engine {
 		camZoom=1;
 		Point camLocation=new Point(camX,camY,camZ);
 		camera=new Camera(camLocation,camRotX,camRotY,camRotZ,renderWidth,renderHeight,camZoom);
-		spheres=Sphere.generateFloorSpheres(10);
+		//spheres=Sphere.generateFloorSpheres(10);
 		light=new Point(500,500,0);
 		this.cameraRays=new Ray[renderWidth][renderHeight];
 		//double i=0;
@@ -138,11 +139,12 @@ public class Engine {
 		}
 	}
 
-	public Color[][] calculateFrame(int quadrant, /*Color[][] colorIn,*/ Point camLocation, Vector camRotation) {
+	public Color[][] calculateFrame(int quadrant, /*Color[][] colorIn,*/ Point camLocation, Vector camRotation, double zoom) {
 		camera.setLocation(camLocation);
 		camera.setxAngle(camRotation.getX());
 		camera.setyAngle(camRotation.getY());
 		camera.setzAngle(camRotation.getZ());
+		camera.setZoom(zoom);
 		cameraRays=camera.generateRays();
 		Color[][]color=new Color[renderWidth][renderHeight];
 		if(quadrant==1) {

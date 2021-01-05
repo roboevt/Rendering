@@ -7,7 +7,7 @@ public class Main {
 	public static double camX;
 	public static double camY;
 	public static double camZ;
-	public static double speed=.1;
+	public static double speed=.2;
 	public static Point camLocation=new Point(0,1,-6);
 	public static double camRotX;
 	public static double camRotY;
@@ -39,7 +39,7 @@ public class Main {
 		camX=0;
 		camY=1;
 		camZ=-6;
-		camRotX=-40;
+		camRotX=0;
 		camRotY=90;
 		camRotZ=0;
 		camZoom=1;
@@ -62,17 +62,18 @@ public class Main {
 		//Engine engine2=new Engine(400,2,5);
 		//Engine engine3=new Engine(400,2,5);
 		//Engine engine4=new Engine(400,2,5);
-		Thread t1=new Thread(new MyThread(1));
-		Thread t2=new Thread(new MyThread(2));
-		Thread t3=new Thread(new MyThread(3));
-		Thread t4=new Thread(new MyThread(4));
+		Sphere spheres[]=Sphere.generateFloorSpheres(10);
+		Thread t1=new Thread(new MyThread(1,spheres));
+		Thread t2=new Thread(new MyThread(2,spheres));
+		Thread t3=new Thread(new MyThread(3,spheres));
+		Thread t4=new Thread(new MyThread(4,spheres));
 		t1.start();
 		t2.start();
 		t3.start();
 		t4.start();
 		while(true) {
 			while(done1==false&&done2==false&&done3==false&&done4==false) {
-				StdDraw.pause(10);
+				StdDraw.pause(1);
 			}
 			StdDraw.setPenColor();
 			StdDraw.filledRectangle(200,200,400,400);
@@ -111,12 +112,17 @@ public class Main {
 			if (checkFor(KeyEvent.VK_CONTROL)) {
 				camY-=speed*camY/2;
 			}
-
 			if (checkFor(KeyEvent.VK_UP)) {
 				camRotX-=speed*30/camZoom;
 			}
 			if (checkFor(KeyEvent.VK_DOWN)) {
 				camRotX+=speed*30/camZoom;
+			}
+			if (checkFor(KeyEvent.VK_LEFT)) {
+				camRotY-=speed*30/camZoom;
+			}
+			if (checkFor(KeyEvent.VK_RIGHT)) {
+				camRotY+=speed*30/camZoom;
 			}
 			if (checkFor(KeyEvent.VK_R)) {
 				if(camZoom<10) {
@@ -128,13 +134,7 @@ public class Main {
 					camZoom-=speed*camZoom;
 				}
 			}
-
-			if (checkFor(KeyEvent.VK_LEFT)) {
-				camRotY-=speed*30/camZoom;
-			}
-			if (checkFor(KeyEvent.VK_RIGHT)) {
-				camRotY+=speed*30/camZoom;
-			}
+			
 			camLocation.setX(camX);
 			camLocation.setY(camY);
 			camLocation.setZ(camZ);

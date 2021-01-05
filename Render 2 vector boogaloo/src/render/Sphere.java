@@ -14,8 +14,9 @@ public class Sphere {
 	}
 	
 	public static Sphere[] generateFloorSpheres(int numSpheres) {
-		/*Sphere[] spheres=new Sphere[numSpheres];
+		Sphere[] spheres=new Sphere[numSpheres];
 		Color color=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
+		spheres[0]=new Sphere(new Point(0,-1000,0), 1000, new Material(false));
 		spheres[0].setColor(color);
 		for(int i=1;i<numSpheres;i++) {
 			double y=.2+Math.random()*.2;
@@ -29,10 +30,11 @@ public class Sphere {
 				spheres[i].setColor(color);
 				spheres[i].material.reflective=reflective;
 			}	
-		}*/
-		Sphere[] spheres=new Sphere[2];
+		}
+		/*Sphere[] spheres=new Sphere[3];
 		spheres[0]=new Sphere(new Point(0,-1000,0),999,new Material(false));
 		spheres[1]=new Sphere(new Point(0,0,0),2,new Material(false));
+		spheres[2]=new Sphere(new Point(3,0,0),2,new Material(true));*/
 		return spheres;
 	}
 
