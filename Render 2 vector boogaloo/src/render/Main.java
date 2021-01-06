@@ -14,6 +14,8 @@ public class Main {
 	public static double camRotZ;
 	public static Vector camRotation=new Vector(0,90,0);
 	public static double camZoom;
+	public static Camera camera;
+	public static Ray[][] cameraRays;
 	public static boolean done1;
 	public static boolean done2;
 	public static boolean done3;
@@ -23,9 +25,13 @@ public class Main {
 	public static Color[][] color2;
 	public static Color[][] color3;
 	public static Color[][] color4;
-	public static int renderWidth=300;
-	public static int renderHeight=300;
-	public static int renderScale=3;
+	public static Sphere[] spheres;
+	public static int renderWidth=800;
+	public static int renderHeight=800;
+	public static int renderScale=1;
+	public static double bounceHeight;
+	public static double bounceSpeed;
+	public static double bounceAcceleration;
 
 	public static void main(String[] args) {
 		StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
@@ -35,7 +41,9 @@ public class Main {
 		StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
 		StdDraw.setPenRadius(0);
 		StdDraw.enableDoubleBuffering();
-		
+
+		bounceHeight=2;
+		bounceAcceleration=-.05;
 		camX=0;
 		camY=1;
 		camZ=-6;
@@ -49,6 +57,8 @@ public class Main {
 		camRotation.setX(camRotX);
 		camRotation.setY(camRotY);
 		camRotation.setX(camRotZ);
+		Camera camera=new Camera(camLocation, camRotX, camRotY,camRotZ,renderWidth,renderHeight,camZoom);
+		cameraRays=camera.generateRays();
 		color1=new Color[renderWidth][renderHeight];
 		color2=new Color[renderWidth][renderHeight];
 		color3=new Color[renderWidth][renderHeight];
@@ -58,28 +68,42 @@ public class Main {
 		done3=false;
 		done4=false;
 		doneAll=true;
-		Sphere spheres[]=Sphere.generateFloorSpheres(2);
-		Thread t1=new Thread(new MyThread(1,spheres));
-		Thread t2=new Thread(new MyThread(2,spheres));
-		Thread t3=new Thread(new MyThread(3,spheres));
-		Thread t4=new Thread(new MyThread(4,spheres));
+		//Sphere spheres[]=Sphere.generateRandomSpheres(2);
+		spheres=new Sphere[3];
+		spheres[0]=new Sphere(new Point(0,-1000,0),999,new Material(false));
+		spheres[1]=new Sphere(new Point(0,bounceHeight,0),1,new Material(false));
+		spheres[2]=new Sphere(new Point(2,0,2),1,new Material(true));
+
+		Thread t1=new Thread(new MyThread(1, cameraRays, spheres));
+		Thread t2=new Thread(new MyThread(2, cameraRays, spheres));
+		Thread t3=new Thread(new MyThread(3, cameraRays, spheres));
+		Thread t4=new Thread(new MyThread(4, cameraRays, spheres));
 		t1.start();
 		t2.start();
 		t3.start();
 		t4.start();
 		while(true) {
-			while(done1==false&&done2==false&&done3==false&&done4==false) {
+			long startTime = System.currentTimeMillis();
+			done1=false;
+			done2=false;
+			done3=false;
+			done4=false;
+			doneAll=false;//Threads start rendering here
+			long startTimeCalculate = System.currentTimeMillis();
+			while(done1==false||done2==false||false||done3==false||false||done4==false) {
 				try {
-					Thread.currentThread().sleep(1);
+					Thread.currentThread();
+					Thread.sleep(1);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 			doneAll=true;
-			
-			//System.out.println("All done \n");
-			
+			long endTimeCalculate = System.currentTimeMillis();
+			System.out.println("Calculate all time: "+((endTimeCalculate - startTimeCalculate)) + " milliseconds");
+
+			long startTimeDraw = System.currentTimeMillis();
 			StdDraw.setPenColor();
 			StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
 			Engine.draw(color1,renderWidth,renderHeight);
@@ -87,12 +111,10 @@ public class Main {
 			Engine.draw(color3,renderWidth,renderHeight);
 			Engine.draw(color4,renderWidth,renderHeight);
 			StdDraw.show();
-			
-			done1=false;
-			done2=false;
-			done3=false;
-			done4=false;
-			
+
+			long endTimeDraw = System.currentTimeMillis();
+			System.out.println("Draw all time: "+((endTimeDraw - startTimeDraw)) + " milliseconds");
+
 			if (checkFor(KeyEvent.VK_W)) {
 				camZ+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
 				camX+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
@@ -137,70 +159,30 @@ public class Main {
 					camZoom-=speed*camZoom;
 				}
 			}
-			
+			bounceHeight+=bounceSpeed;
+			if(bounceHeight<0) {
+				bounceSpeed=bounceSpeed*-1;
+			}else {
+				bounceSpeed+=bounceAcceleration;
+			}
+			spheres[1].center.y=bounceHeight;
+
 			camLocation.setX(camX);
 			camLocation.setY(camY);
 			camLocation.setZ(camZ);
-			camRotation.setX(camRotX);
-			camRotation.setY(camRotY);
-			camRotation.setZ(camRotZ);
-			
+
+			camera.setLocation(camLocation);
+			camera.setxAngle(camRotX);
+			camera.setyAngle(camRotY);
+			camera.setzAngle(camRotZ);
+			camera.setZoom(camZoom);
+
+			cameraRays=camera.generateRays();
+
+			long endTime = System.currentTimeMillis();
+			System.out.println("Frame time: "+((endTime - startTime)) + " milliseconds");
+			System.out.println();
 		}
-		//System.out.println("here");
-		/*while(true) {
-			if (checkFor(KeyEvent.VK_W)) {
-				camZ+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
-				camX+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
-			}
-			if (checkFor(KeyEvent.VK_S)) {
-				camZ-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
-				camX-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
-			}
-			if (checkFor(KeyEvent.VK_A)) {
-				camX+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
-				camZ-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
-			}
-			if (checkFor(KeyEvent.VK_D)) {
-				camX-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
-				camZ+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
-			}
-			if (checkFor(KeyEvent.VK_SHIFT)) {
-				camY+=speed*camY/2;
-			}
-			if (checkFor(KeyEvent.VK_CONTROL)) {
-				camY-=speed*camY/2;
-			}
-
-			if (checkFor(KeyEvent.VK_UP)) {
-				camRotX-=speed*30/camZoom;
-			}
-			if (checkFor(KeyEvent.VK_DOWN)) {
-				camRotX+=speed*30/camZoom;
-			}
-			if (checkFor(KeyEvent.VK_R)) {
-				if(camZoom<10) {
-					camZoom+=speed*camZoom;
-				}
-			}
-			if (checkFor(KeyEvent.VK_F)) {
-				if(camZoom>.25) {
-					camZoom-=speed*camZoom;
-				}
-			}
-
-			if (checkFor(KeyEvent.VK_LEFT)) {
-				camRotY-=speed*30/camZoom;
-			}
-			if (checkFor(KeyEvent.VK_RIGHT)) {
-				camRotY+=speed*30/camZoom;
-			}
-			camLocation.setX(camX);
-			camLocation.setY(camY);
-			camLocation.setZ(camZ);
-			camRotation.setX(camRotX);
-			camRotation.setY(camRotY);
-			camRotation.setX(camRotZ);
-		}*/
 	}
 
 	private static boolean checkFor(int key) {

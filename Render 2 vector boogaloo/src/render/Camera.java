@@ -79,7 +79,6 @@ public class Camera {
 	public Ray[][] generateRays(){
 		long startTime = System.currentTimeMillis();
 		Ray[][] ray=new Ray[renderWidth][renderHeight];
-
 		for(int i=0;i<renderWidth;i++) {
 			for(int j=0;j<renderHeight;j++) {
 				double x=(i-(renderWidth/2.0))/(renderWidth/2.0);
@@ -115,7 +114,7 @@ public class Camera {
 			//System.out.println(ray[i][0].getDirection().toString());
 		}
 		long endTime = System.currentTimeMillis();
-		//System.out.println("Generate ray time: "+((endTime - startTime)) + " milliseconds");
+		System.out.println("Generate ray time: "+((endTime - startTime)) + " milliseconds");
 		return ray;
 	}
 }

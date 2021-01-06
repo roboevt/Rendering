@@ -60,7 +60,7 @@ public class Engine {
 			}
 		}
 		return colorOut;
-		
+
 	}
 
 	private  Color calculateRay(Ray ray, Sphere[] spheres, Point light, int bounces) { // the main attraction
@@ -134,17 +134,10 @@ public class Engine {
 		}
 	}
 
-	public Color[][] calculateFrame(int quadrant, /*Color[][] colorIn,*/ Point camLocation, Vector camRotation, double zoom) {
-		camera.setLocation(camLocation);
-		camera.setxAngle(camRotation.getX());
-		camera.setyAngle(camRotation.getY());
-		camera.setzAngle(camRotation.getZ());
-		camera.setZoom(zoom);
-		cameraRays=camera.generateRays();
+	public Color[][] calculateFrame(int quadrant, Ray[][] cameraRays) {
 		Color[][]color=new Color[renderWidth][renderHeight];
 		if(quadrant==1) {
 			color=calculateRays(cameraRays,renderWidth/2,renderWidth,renderHeight/2,renderHeight,spheres,light);
-			//System.out.println(color[0][0].getRed());
 		}
 		if(quadrant==2) {
 			color=calculateRays(cameraRays, 0,renderWidth/2,renderHeight/2,renderHeight, spheres, light);
@@ -156,16 +149,8 @@ public class Engine {
 			color=calculateRays(cameraRays, renderWidth/2,renderWidth,0,renderHeight/2,spheres,light);
 		}
 		return color;
-
-		//System.out.println(count);
-
-		//StdDraw.setPenColor(Color.white);
-		//StdDraw.textLeft(10, renderHeight-10,"fps: "+ 1/((endTime - startTime)/1000.0)+"");
-		//StdDraw.textLeft(10, renderHeight-20, "zoom: "+camZoom);
-		//StdDraw.textLeft(10, renderHeight-30,"million magnitude calculations: "+magnitudeCount/1000000);
-		//StdDraw.show();
 	}
 
-	//public static void main(String[] args) {
-	//}
+	public static void main(String[] args) {
+	}
 }

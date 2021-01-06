@@ -13,7 +13,7 @@ public class Sphere {
 		this.material=material;
 	}
 	
-	public static Sphere[] generateFloorSpheres(int numSpheres) {
+	public static Sphere[] generateRandomSpheres(int numSpheres) {
 		Sphere[] spheres=new Sphere[numSpheres+1];
 		Color color=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
 		spheres[0]=new Sphere(new Point(0,-1000,0), 1000, new Material(false));
