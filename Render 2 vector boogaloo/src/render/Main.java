@@ -26,12 +26,14 @@ public class Main {
 	public static Color[][] color3;
 	public static Color[][] color4;
 	public static Sphere[] spheres;
-	public static int renderWidth=800;
-	public static int renderHeight=800;
+	public static int renderWidth=1000;
+	public static int renderHeight=1000;
 	public static int renderScale=1;
 	public static double bounceHeight;
 	public static double bounceSpeed;
 	public static double bounceAcceleration;
+	public static Color skyColor;
+	public static int maxBounces=3;
 
 	public static void main(String[] args) {
 		StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
@@ -41,7 +43,7 @@ public class Main {
 		StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
 		StdDraw.setPenRadius(0);
 		StdDraw.enableDoubleBuffering();
-
+		
 		bounceHeight=2;
 		bounceAcceleration=-.05;
 		camX=0;
@@ -57,7 +59,7 @@ public class Main {
 		camRotation.setX(camRotX);
 		camRotation.setY(camRotY);
 		camRotation.setX(camRotZ);
-		Camera camera=new Camera(camLocation, camRotX, camRotY,camRotZ,renderWidth,renderHeight,camZoom);
+		camera=new Camera(camLocation, camRotX, camRotY,camRotZ,renderWidth,renderHeight,camZoom);
 		cameraRays=camera.generateRays();
 		color1=new Color[renderWidth][renderHeight];
 		color2=new Color[renderWidth][renderHeight];
@@ -68,16 +70,19 @@ public class Main {
 		done3=false;
 		done4=false;
 		doneAll=true;
-		//Sphere spheres[]=Sphere.generateRandomSpheres(2);
-		spheres=new Sphere[3];
-		spheres[0]=new Sphere(new Point(0,-1000,0),999,new Material(false));
-		spheres[1]=new Sphere(new Point(0,bounceHeight,0),1,new Material(false));
-		spheres[2]=new Sphere(new Point(2,0,2),1,new Material(true));
+		spheres=Sphere.generateRandomSpheres(10);
+		//spheres=new Sphere[3];
+		//spheres[0]=new Sphere(new Point(0,-1000,0),999,new Material(false));
+		//spheres[1]=new Sphere(new Point(0,bounceHeight,0),1,new Material(false));
+		//spheres[2]=new Sphere(new Point(2,0,2),1,new Material(true));
 
-		Thread t1=new Thread(new MyThread(1, cameraRays, spheres));
-		Thread t2=new Thread(new MyThread(2, cameraRays, spheres));
-		Thread t3=new Thread(new MyThread(3, cameraRays, spheres));
-		Thread t4=new Thread(new MyThread(4, cameraRays, spheres));
+		skyColor=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
+		skyColor=Color.black;
+
+		Thread t1=new Thread(new Render(1, spheres));
+		Thread t2=new Thread(new Render(2, spheres));
+		Thread t3=new Thread(new Render(3, spheres));
+		Thread t4=new Thread(new Render(4, spheres));
 		t1.start();
 		t2.start();
 		t3.start();
@@ -98,7 +103,7 @@ public class Main {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			}
+			}//threads are done rendering by here
 			doneAll=true;
 			long endTimeCalculate = System.currentTimeMillis();
 			System.out.println("Calculate all time: "+((endTimeCalculate - startTimeCalculate)) + " milliseconds");
@@ -111,7 +116,6 @@ public class Main {
 			Engine.draw(color3,renderWidth,renderHeight);
 			Engine.draw(color4,renderWidth,renderHeight);
 			StdDraw.show();
-
 			long endTimeDraw = System.currentTimeMillis();
 			System.out.println("Draw all time: "+((endTimeDraw - startTimeDraw)) + " milliseconds");
 
@@ -160,13 +164,14 @@ public class Main {
 				}
 			}
 			bounceHeight+=bounceSpeed;
-			if(bounceHeight<0) {
+			if(bounceHeight<spheres[1].radius) {
 				bounceSpeed=bounceSpeed*-1;
 			}else {
 				bounceSpeed+=bounceAcceleration;
 			}
-			spheres[1].center.y=bounceHeight;
-
+			for(int i=1;i<spheres.length;i++) {
+				spheres[i].center.y=bounceHeight;
+			}
 			camLocation.setX(camX);
 			camLocation.setY(camY);
 			camLocation.setZ(camZ);
@@ -177,7 +182,7 @@ public class Main {
 			camera.setzAngle(camRotZ);
 			camera.setZoom(camZoom);
 
-			cameraRays=camera.generateRays();
+			//cameraRays=camera.generateRays();
 
 			long endTime = System.currentTimeMillis();
 			System.out.println("Frame time: "+((endTime - startTime)) + " milliseconds");

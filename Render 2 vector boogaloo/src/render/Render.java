@@ -2,22 +2,28 @@ package render;
 
 import java.awt.Color;
 
-public class MyThread implements Runnable{
+public class Render implements Runnable{
 	int quadrant;
-	Ray[][] cameraRays;
 	Sphere[] spheres;
+	Color skyColor;
+	Engine engine;
 
-	public MyThread(int quadrant,Ray[][] cameraRays, Sphere[] spheres) {
+	public Render(int quadrant, Sphere[] spheres) {
 		this.quadrant=quadrant;
-		this.cameraRays=cameraRays;
 		this.spheres=spheres;
 	}
+	
 	@Override
 	public void run() {
 		System.out.println(Thread.currentThread().getName());
 		System.out.println("Quadrant: "+quadrant);
 
-		Engine engine1=new Engine(Main.renderWidth,Main.renderScale,5,Main.spheres);
+		engine=new Engine(Main.renderWidth,Main.renderScale,Main.maxBounces,Main.spheres);
+		engine.setSkyColor(Main.skyColor);
+		
+		Ray[][] cameraRays=new Ray[Main.renderWidth][Main.renderHeight];
+		
+		//Color[][] color=new Color[Main.renderWidth][Main.renderHeight];
 		
 		while(true) {
 			//long startTime = System.currentTimeMillis();
@@ -34,19 +40,24 @@ public class MyThread implements Runnable{
 			long startTime = System.currentTimeMillis();
 			//Color[][] color=new Color[400][400];
 			if(quadrant==1&&Main.done1==false) {
-				Main.color1=engine1.calculateFrame(quadrant, Main.cameraRays);
+				cameraRays=Main.camera.generateRaysQuadrant(1);
+				Main.color1=engine.calculateFrame(quadrant, cameraRays);
+				//color=engine.calculateFrame(quadrant, cameraRays);
 				Main.done1=true;
 			}
 			if(quadrant==2&&Main.done2==false) {
-				Main.color2=engine1.calculateFrame(quadrant, Main.cameraRays);
+				cameraRays=Main.camera.generateRaysQuadrant(2);
+				Main.color2=engine.calculateFrame(quadrant, cameraRays);
 				Main.done2=true;
 			}
 			if(quadrant==3&&Main.done3==false) {
-				Main.color3=engine1.calculateFrame(quadrant, Main.cameraRays);
+				cameraRays=Main.camera.generateRaysQuadrant(3);
+				Main.color3=engine.calculateFrame(quadrant, cameraRays);
 				Main.done3=true;
 			}
 			if(quadrant==4&&Main.done4==false) {
-				Main.color4=engine1.calculateFrame(quadrant, Main.cameraRays);
+				cameraRays=Main.camera.generateRaysQuadrant(4);
+				Main.color4=engine.calculateFrame(quadrant, cameraRays);
 				Main.done4=true;
 			}
 			long endTime = System.currentTimeMillis();

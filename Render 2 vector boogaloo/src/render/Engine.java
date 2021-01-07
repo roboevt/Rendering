@@ -21,6 +21,7 @@ public class Engine {
 	public Sphere[] spheres;
 	public Point light;
 	Ray[][] cameraRays;
+	Color skyColor;
 
 	public Engine(int renderSize, int renderScale, int maxBounces, Sphere[] spheres) {
 		this.renderWidth=renderSize;
@@ -28,28 +29,22 @@ public class Engine {
 		this.renderScale=renderScale;
 		this.maxBounces=maxBounces-1;
 		this.spheres=spheres;
-		/*StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
-		StdDraw.setXscale(0,renderWidth);
-		StdDraw.setYscale(0,renderHeight);
-		StdDraw.setPenColor(new Color(0,0,0));
-		StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
-		StdDraw.setPenRadius(0);
-		StdDraw.enableDoubleBuffering();*/
 		camX=0;
 		camY=1;
 		camZ=-8;
-
 		camRotX=0;
 		camRotY=90;
 		camRotZ=0;
-
 		camZoom=1;
 		Point camLocation=new Point(camX,camY,camZ);
 		camera=new Camera(camLocation,camRotX,camRotY,camRotZ,renderWidth,renderHeight,camZoom);
-		//spheres=Sphere.generateFloorSpheres(10);
 		light=new Point(500,500,0);
 		this.cameraRays=new Ray[renderWidth][renderHeight];
-		//double i=0;
+		skyColor=new Color(0,0,0);
+	}
+	
+	public void setSkyColor(Color color) {
+		this.skyColor=color;
 	}
 
 	public  Color[][] calculateRays(Ray[][] cameraRays,int startX, int endX, int startY, int endY, Sphere[] spheres, Point light){
@@ -64,7 +59,7 @@ public class Engine {
 	}
 
 	private  Color calculateRay(Ray ray, Sphere[] spheres, Point light, int bounces) { // the main attraction
-		Color color=new Color(0,0,0);
+		Color color=skyColor;
 		double distanceToSphere=ray.distanceToSpheres(spheres);
 		int hitSphere=1;
 		if(distanceToSphere<Integer.MAX_VALUE-1) {//ray hits sphere
@@ -72,7 +67,7 @@ public class Engine {
 			Point pointOnSphere=ray.getOrigin().add(vectorToSphere.toPoint());
 			for(int i=0;i<spheres.length;i++) {
 				Vector centerToPoint=new Vector(pointOnSphere.x-spheres[i].getCenter().x, pointOnSphere.y-spheres[i].getCenter().y, pointOnSphere.z-spheres[i].getCenter().z);
-				if(Math.abs(centerToPoint.magnitude()-spheres[i].getRadius())<.01) {//point is on sphere i
+				if(Math.abs(centerToPoint.magnitude()-spheres[i].getRadius())<.001) {//point is on sphere i
 					hitSphere=i;
 				}
 			}
@@ -135,20 +130,19 @@ public class Engine {
 	}
 
 	public Color[][] calculateFrame(int quadrant, Ray[][] cameraRays) {
-		Color[][]color=new Color[renderWidth][renderHeight];
 		if(quadrant==1) {
-			color=calculateRays(cameraRays,renderWidth/2,renderWidth,renderHeight/2,renderHeight,spheres,light);
+			return calculateRays(cameraRays,renderWidth/2,renderWidth,renderHeight/2,renderHeight,spheres,light);
 		}
 		if(quadrant==2) {
-			color=calculateRays(cameraRays, 0,renderWidth/2,renderHeight/2,renderHeight, spheres, light);
+			return calculateRays(cameraRays, 0,renderWidth/2,renderHeight/2,renderHeight, spheres, light);
 		}
 		if(quadrant==3) {
-			color=calculateRays(cameraRays,0,renderWidth/2,0,renderHeight/2,spheres,light);
+			return calculateRays(cameraRays,0,renderWidth/2,0,renderHeight/2,spheres,light);
 		}
 		if(quadrant==4) {
-			color=calculateRays(cameraRays, renderWidth/2,renderWidth,0,renderHeight/2,spheres,light);
+			return calculateRays(cameraRays, renderWidth/2,renderWidth,0,renderHeight/2,spheres,light);
 		}
-		return color;
+		return null;
 	}
 
 	public static void main(String[] args) {
