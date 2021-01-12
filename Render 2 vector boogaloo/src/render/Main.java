@@ -67,7 +67,7 @@ public class Main {
 
 		Runnable[] tasks=new Runnable[renderWidth];
 		for(int i=0;i<renderWidth;i++) {
-			tasks[i]=new RenderLine(i,spheres);
+			tasks[i]=new RenderLine(i);
 		}
 		System.out.println("Threads: "+Runtime.getRuntime().availableProcessors());
 		

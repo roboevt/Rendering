@@ -63,7 +63,6 @@ public class Engine {
 
 	public  Color[] calculateLine(Ray[] cameraRays, int line, Sphere[] spheres, Point light){
 		Color[] colorOut=new Color[renderWidth];
-		int i=line;
 		for(int j=0;j<cameraRays.length;j++) {
 			colorOut[j]=calculateRay(cameraRays[j],spheres,light,0);
 		}
