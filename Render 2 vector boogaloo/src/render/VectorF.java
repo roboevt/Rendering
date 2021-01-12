@@ -40,8 +40,8 @@ public class VectorF {
 		return x+" "+y+" "+z+" ";
 	}
 	
-	public Point toPoint() {
-		return new Point(this.x,this.y,this.z);
+	public PointF toPointF() {
+		return new PointF(this.x,this.y,this.z);
 	}
 	
 	public VectorF subtract(VectorF vectorf) {

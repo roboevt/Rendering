@@ -18,16 +18,16 @@ public class Engine {
 	public int maxBounces;
 	public double speed=.2;
 	public static int magnitudeCount=0;
-	public double camX;
-	public double camY;
-	public double camZ;
-	public double camRotX;
-	public double camRotY;
-	public double camRotZ;
-	public double camZoom;
+	public float camX;
+	public float camY;
+	public float camZ;
+	public float camRotX;
+	public float camRotY;
+	public float camRotZ;
+	public float camZoom;
 	public Camera camera;
 	public Sphere[] spheres;
-	public Point light;
+	public PointF light;
 	Ray[][] cameraRays;
 	Color skyColor;
 	public int castRays;
@@ -48,9 +48,9 @@ public class Engine {
 		camRotY=90;
 		camRotZ=0;
 		camZoom=1;
-		Point camLocation=new Point(camX,camY,camZ);
+		PointF camLocation=new PointF(camX,camY,camZ);
 		camera=new Camera(camLocation,camRotX,camRotY,camRotZ,renderWidth,renderHeight,camZoom);
-		light=new Point(500,500,0);
+		light=new PointF(500,500,0);
 		this.cameraRays=new Ray[renderWidth][renderHeight];
 		skyColor=new Color(0,0,0);
 		castRays=0;
@@ -61,7 +61,7 @@ public class Engine {
 		this.skyColor=color;
 	}
 
-	public  Color[] calculateLine(Ray[] cameraRays, int line, Sphere[] spheres, Point light){
+	public  Color[] calculateLine(Ray[] cameraRays, int line, Sphere[] spheres, PointF light){
 		Color[] colorOut=new Color[renderWidth];
 		for(int j=0;j<cameraRays.length;j++) {
 			colorOut[j]=calculateRay(cameraRays[j],spheres,light,0);
@@ -70,7 +70,7 @@ public class Engine {
 
 	}
 
-	public  Color[][] calculateRays(Ray[][] cameraRays,int startX, int endX, int startY, int endY, Sphere[] spheres, Point light){
+	public  Color[][] calculateRays(Ray[][] cameraRays,int startX, int endX, int startY, int endY, Sphere[] spheres, PointF light){
 		Color[][] colorOut=new Color[renderWidth][renderHeight];
 		for(int i=startX;i<endX;i++) {
 			for(int j=startY;j<endY;j++) {
@@ -81,24 +81,24 @@ public class Engine {
 
 	}
 
-	private  Color calculateRay(Ray ray, Sphere[] spheres, Point light, int bounces) { // the main attraction
+	private  Color calculateRay(Ray ray, Sphere[] spheres, PointF light, int bounces) { // the main attraction
 		castRays++;
 		Color color=skyColor;
-		double distanceToSphere=ray.distanceToSpheres(spheres);
-		double brightness=0;
+		float distanceToSphere=ray.distanceToSpheres(spheres);
+		float brightness=0;
 		int hitSphere=1;
 		if(distanceToSphere<Integer.MAX_VALUE-1) {//ray hits sphere
-			Vector vectorToSphere=ray.getDirection().multiply(distanceToSphere);
-			Point pointOnSphere=ray.getOrigin().add(vectorToSphere.toPoint());
+			VectorF vectorToSphere=ray.getDirection().multiply(distanceToSphere);
+			PointF pointOnSphere=ray.getOrigin().add(vectorToSphere.toPointF());
 			for(int i=0;i<spheres.length;i++) {
-				Vector centerToPoint=new Vector(pointOnSphere.x-spheres[i].getCenter().x, pointOnSphere.y-spheres[i].getCenter().y, pointOnSphere.z-spheres[i].getCenter().z);
+				VectorF centerToPoint=new VectorF(pointOnSphere.x-spheres[i].getCenter().x, pointOnSphere.y-spheres[i].getCenter().y, pointOnSphere.z-spheres[i].getCenter().z);
 				if(Math.abs(centerToPoint.magnitude()-spheres[i].getRadius())<.001) {//point is on sphere i
 					hitSphere=i;
 				}
 			}
 
 			if(spheres[hitSphere].material.reflective&&bounces<maxBounces) { //if material of hit sphere is reflective, and not at max bounce limit, recurse
-				Vector normal=new Vector(pointOnSphere.x-spheres[hitSphere].getCenter().x, pointOnSphere.y-spheres[hitSphere].getCenter().y, pointOnSphere.z-spheres[hitSphere].getCenter().z);
+				VectorF normal=new VectorF(pointOnSphere.x-spheres[hitSphere].getCenter().x, pointOnSphere.y-spheres[hitSphere].getCenter().y, pointOnSphere.z-spheres[hitSphere].getCenter().z);
 				//pointOnSphere.add(normal.multiply(.001).toPoint()); //the bumps the point away from the surface a bit, seems to not be necessary for some reason
 				Ray reflection=ray.calculateReflection(new Ray(spheres[hitSphere].getCenter(),normal), pointOnSphere);
 				color=calculateRay(reflection,spheres,light,bounces+1);
@@ -116,8 +116,8 @@ public class Engine {
 		return color;
 	}
 
-	private static boolean checkShadow(Point pointOnSphere, Sphere[] spheres, Point light) {
-		Vector vectorToLight=new Vector(light.x-pointOnSphere.x,light.y-pointOnSphere.y,light.z-pointOnSphere.z);
+	private static boolean checkShadow(PointF pointOnSphere, Sphere[] spheres, PointF light) {
+		VectorF vectorToLight=new VectorF(light.x-pointOnSphere.x,light.y-pointOnSphere.y,light.z-pointOnSphere.z);
 		Ray rayToLight=new Ray(pointOnSphere,vectorToLight.normalize());
 		if(rayToLight.distanceToSpheres(spheres)<vectorToLight.magnitude()) { //in shadow
 			return true; //in shadow
@@ -126,11 +126,11 @@ public class Engine {
 		}
 	}
 
-	private static double checkDiffuse(Point pointOnSphere, Sphere sphere, Point light, Ray ray) {
-		Vector lightVector=new Vector(light.x-pointOnSphere.x,light.y-pointOnSphere.y,light.z-pointOnSphere.z);
-		Vector normal=new Vector(pointOnSphere.x-sphere.getCenter().x, pointOnSphere.y-sphere.getCenter().y, pointOnSphere.z-sphere.getCenter().z);
-		double angle=Math.acos(normal.dot(lightVector)/(lightVector.magnitude()*normal.magnitude()));
-		return Math.cos(angle);
+	private static float checkDiffuse(PointF pointOnSphere, Sphere sphere, PointF light, Ray ray) {
+		VectorF lightVector=new VectorF(light.x-pointOnSphere.x,light.y-pointOnSphere.y,light.z-pointOnSphere.z);
+		VectorF normal=new VectorF(pointOnSphere.x-sphere.getCenter().x, pointOnSphere.y-sphere.getCenter().y, pointOnSphere.z-sphere.getCenter().z);
+		float angle=(float) Math.acos(normal.dot(lightVector)/(lightVector.magnitude()*normal.magnitude()));
+		return (float) Math.cos(angle);
 	}
 
 	public static void draw(Color[][] colorIn, int renderWidth, int renderHeight) {
@@ -184,28 +184,6 @@ public class Engine {
 		else {
 			return false;
 		}
-	}
-
-	public Color[][] calculateFrame(int quadrant, Ray[][] cameraRays) {
-		if(quadrant==1) {
-			return calculateRays(cameraRays,0,renderWidth/3,renderHeight/2,renderHeight,spheres,light);
-		}
-		if(quadrant==2) {
-			return calculateRays(cameraRays, renderWidth/3,2*renderWidth/3,renderHeight/2,renderHeight, spheres, light);
-		}
-		if(quadrant==3) {
-			return calculateRays(cameraRays,2*renderWidth/3,renderWidth,renderHeight/2,renderHeight,spheres,light);
-		}
-		if(quadrant==4) {
-			return calculateRays(cameraRays, 0,renderWidth/3,0,renderHeight/2,spheres,light);
-		}
-		if(quadrant==5) {
-			return calculateRays(cameraRays, renderWidth/3,2*renderWidth/3,0,renderHeight/2,spheres,light);
-		}
-		if(quadrant==6) {
-			return calculateRays(cameraRays, 2*renderWidth/3,renderWidth,0,renderHeight/2,spheres,light);
-		}
-		return null;
 	}
 
 	public static void main(String[] args) {

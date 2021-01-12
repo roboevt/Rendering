@@ -7,16 +7,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
-	public static double camX;
-	public static double camY;
-	public static double camZ;
-	public static double speed=.2;
-	public static Point camLocation=new Point(0,1,-6);
-	public static double camRotX;
-	public static double camRotY;
-	public static double camRotZ;
-	public static Vector camRotation=new Vector(0,90,0);
-	public static double camZoom;
+	public static float camX;
+	public static float camY;
+	public static float camZ;
+	public static float speed=.2f;
+	public static PointF camLocation=new PointF(0,1,-6);
+	public static float camRotX;
+	public static float camRotY;
+	public static float camRotZ;
+	public static VectorF camRotation=new VectorF(0,90,0);
+	public static float camZoom;
 	public static Camera camera;
 	public static Ray[][] cameraRays;
 	public static Color[][] allColor;
@@ -24,12 +24,12 @@ public class Main {
 	public static int renderWidth =1000;
 	public static int renderHeight=1000;
 	public static int numSpheres=10;
-	public static double bounceHeight;
-	public static double bounceSpeed;
-	public static double bounceAcceleration;
+	public static float bounceHeight;
+	public static float bounceSpeed;
+	public static float bounceAcceleration;
 	public static Color skyColor;
 	public static int maxBounces=5;
-	public static Point light=new Point(500,500,500);
+	public static PointF light=new PointF(500,500,500);
 
 	public static void main(String[] args) {
 		StdDraw.setCanvasSize(renderWidth,renderHeight);
@@ -45,7 +45,7 @@ public class Main {
 		allColor=new Color[renderWidth][renderHeight];
 		
 		bounceHeight=2;
-		bounceAcceleration=-.02;
+		bounceAcceleration=-.02f;
 		camX=0;
 		camY=1;
 		camZ=-6;

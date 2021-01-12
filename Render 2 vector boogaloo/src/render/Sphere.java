@@ -3,11 +3,11 @@ package render;
 import java.awt.Color;
 
 public class Sphere {
-	public Point center;
-	public double radius;
+	public PointF center;
+	public float radius;
 	public Material material;
 	
-	public Sphere(Point center, double radius, Material material) {
+	public Sphere(PointF center, float radius, Material material) {
 		this.center = center;
 		this.radius = radius;
 		this.material=material;
@@ -16,13 +16,13 @@ public class Sphere {
 	public static Sphere[] generateRandomSpheres(int numSpheres) {
 		Sphere[] spheres=new Sphere[numSpheres+1];
 		Color color=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
-		spheres[0]=new Sphere(new Point(0,-1000,0), 1000, new Material(false));
+		spheres[0]=new Sphere(new PointF(0,-1000,0), 1000, new Material(false));
 		spheres[0].setColor(color);
 		for(int i=1;i<numSpheres+1;i++) {
-			double y=.2+Math.random()*.2;
-			double radius=y;
+			float y=(float) (.2+Math.random()*.2);
+			float radius=y;
 			boolean reflective=true;
-			Point center=new Point(2.5-5*Math.random(),y,2.5-5*Math.random());
+			PointF center=new PointF((float)(2.5-5*Math.random()),y,(float)(2.5-5*Math.random()));
 			spheres[i]=new Sphere(center,radius,new Material(reflective));
 			if(Math.random()>.5) {//number represents probability of reflective sphere
 				reflective=false;
@@ -38,30 +38,30 @@ public class Sphere {
 		return spheres;
 	}
 
-	public Point getCenter() {
+	public PointF getCenter() {
 		return center;
 	}
 
-	public void setCenter(Point center) {
+	public void setCenter(PointF center) {
 		this.center = center;
 	}
-	public void setX(double x) {
+	public void setX(float x) {
 		center.x=x;
 	}
 	
-	public void setY(double y) {
+	public void setY(float y) {
 		center.y=y;
 	}
 	
-	public void setZ(double z) {
+	public void setZ(float z) {
 		center.z=z;
 	}
 
-	public double getRadius() {
+	public float getRadius() {
 		return radius;
 	}
 
-	public void setRadius(double radius) {
+	public void setRadius(float radius) {
 		this.radius = radius;
 	}
 	
