@@ -1,15 +1,40 @@
 package render;
 
-public class Vector {
+public class Vector { 
 	public double x;
 	public double y;
 	public double z;
+	public static double max;
+	public static int countFast;
+	public static int countSlow;
+	private static double[] sqrtTable;
+	private static double sqrtTableMax=20;
+	private static int sqrtTableLength=10000;
 	
 	public Vector(double x, double y, double z) {
 		//Engine.count++;
 		this.x = x;
 		this.y = y;
 		this.z = z;
+	}
+	
+	
+	public double getSqrt(double value) {
+		if(sqrtTable==null) {
+			sqrtTable=new double[sqrtTableLength];
+			System.out.println("Start calculating sqrts");
+			for(int i=0;i<sqrtTableLength;i++) {
+				sqrtTable[i]=Math.sqrt(i/(sqrtTableLength/sqrtTableMax));
+			}
+			System.out.println("End calculating sqrts");
+		}
+		if(value<sqrtTableMax) {
+			//countFast++;
+			return sqrtTable[(int) (value*(sqrtTableLength/sqrtTableMax))];
+		}else {
+			//countSlow++;
+			return Math.sqrt(value);
+		}
 	}
 
 	public double getX() {
@@ -44,6 +69,10 @@ public class Vector {
 		return new Point(this.x,this.y,this.z);
 	}
 	
+	public VectorF toVectorF() {
+		return new VectorF((float)(this.x),(float)(this.y),(float)(this.z));
+	}
+	
 	public Vector subtract(Vector vector) {
 		return new Vector(this.x-vector.x,this.y-vector.y,this.z-vector.z);
 	}
@@ -57,15 +86,17 @@ public class Vector {
 	}
 	
 	public double magnitude() {
-		//Engine.magnitudeCount++;
-		return Math.sqrt(Math.pow(this.x, 2)+Math.pow(this.y, 2)+Math.pow(this.z, 2));
+		
+		double magnitudeSquared=Math.pow(this.x, 2)+Math.pow(this.y, 2)+Math.pow(this.z, 2);
+		//return getSqrt(magnitudeSquared); //This seems to be slower and not nearly accurate enough :( Ah well
+		return Math.sqrt(magnitudeSquared);
 	}
 	
 	public double magnitudeSqraured() {
 		return Math.pow(this.x, 2)+Math.pow(this.y, 2)+Math.pow(this.z, 2);
 	}
 	
-	public Vector normalize() {
+	public Vector normalize() { //Could I make an array of sqrts to make it faster? would this even be faster?
 		double magnitude=this.magnitude();
 		return new Vector(this.x/magnitude,this.y/magnitude,this.z/magnitude);	
 	}

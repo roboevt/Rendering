@@ -2,6 +2,9 @@ package render;
 
 import java.awt.Color;
 import java.awt.event.KeyEvent;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Main {
 	public static double camX;
@@ -16,36 +19,33 @@ public class Main {
 	public static double camZoom;
 	public static Camera camera;
 	public static Ray[][] cameraRays;
-	public static boolean done1;
-	public static boolean done2;
-	public static boolean done3;
-	public static boolean done4;
-	public static boolean doneAll;
-	public static Color[][] color1;
-	public static Color[][] color2;
-	public static Color[][] color3;
-	public static Color[][] color4;
+	public static Color[][] allColor;
 	public static Sphere[] spheres;
-	public static int renderWidth=1000;
-	public static int renderHeight=1000;
+	public static int renderWidth=800;
+	public static int renderHeight=800;
 	public static int renderScale=1;
 	public static double bounceHeight;
 	public static double bounceSpeed;
 	public static double bounceAcceleration;
 	public static Color skyColor;
-	public static int maxBounces=3;
+	public static int maxBounces=5;
+	public static Point light=new Point(500,500,0);
 
 	public static void main(String[] args) {
 		StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
 		StdDraw.setXscale(0,renderWidth);
 		StdDraw.setYscale(0,renderHeight);
-		StdDraw.setPenColor(new Color(0,0,0));
-		StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
-		StdDraw.setPenRadius(0);
+		//StdDraw.setPenColor(new Color(0,0,0));
+		//StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
+		//StdDraw.setPenRadius(0);
 		StdDraw.enableDoubleBuffering();
+
+		System.setProperty("Dsun.java2d.opengl", "True"); //this doesn't seem to do much of anything
+		
+		allColor=new Color[renderWidth][renderHeight];
 		
 		bounceHeight=2;
-		bounceAcceleration=-.05;
+		bounceAcceleration=-.02;
 		camX=0;
 		camY=1;
 		camZ=-6;
@@ -60,135 +60,59 @@ public class Main {
 		camRotation.setY(camRotY);
 		camRotation.setX(camRotZ);
 		camera=new Camera(camLocation, camRotX, camRotY,camRotZ,renderWidth,renderHeight,camZoom);
-		cameraRays=camera.generateRays();
-		color1=new Color[renderWidth][renderHeight];
-		color2=new Color[renderWidth][renderHeight];
-		color3=new Color[renderWidth][renderHeight];
-		color4=new Color[renderWidth][renderHeight];
-		done1=false;
-		done2=false;
-		done3=false;
-		done4=false;
-		doneAll=true;
-		spheres=Sphere.generateRandomSpheres(10);
-		//spheres=new Sphere[3];
-		//spheres[0]=new Sphere(new Point(0,-1000,0),999,new Material(false));
-		//spheres[1]=new Sphere(new Point(0,bounceHeight,0),1,new Material(false));
-		//spheres[2]=new Sphere(new Point(2,0,2),1,new Material(true));
+		spheres=Sphere.generateRandomSpheres(5);
 
 		skyColor=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
 		skyColor=Color.black;
 
-		Thread t1=new Thread(new Render(1, spheres));
-		Thread t2=new Thread(new Render(2, spheres));
-		Thread t3=new Thread(new Render(3, spheres));
-		Thread t4=new Thread(new Render(4, spheres));
-		t1.start();
-		t2.start();
-		t3.start();
-		t4.start();
+		Runnable[] tasks=new Runnable[renderWidth];
+		for(int i=0;i<renderWidth;i++) {
+			tasks[i]=new RenderLine(i,spheres);
+		}
+		
+		System.out.println("Threads: "+Runtime.getRuntime().availableProcessors());
+		
+		double fps=0;
 		while(true) {
-			long startTime = System.currentTimeMillis();
-			done1=false;
-			done2=false;
-			done3=false;
-			done4=false;
-			doneAll=false;//Threads start rendering here
-			long startTimeCalculate = System.currentTimeMillis();
-			while(done1==false||done2==false||false||done3==false||false||done4==false) {
-				try {
-					Thread.currentThread();
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}//threads are done rendering by here
-			doneAll=true;
-			long endTimeCalculate = System.currentTimeMillis();
-			System.out.println("Calculate all time: "+((endTimeCalculate - startTimeCalculate)) + " milliseconds");
-
-			long startTimeDraw = System.currentTimeMillis();
-			StdDraw.setPenColor();
+			Vector.countFast=0;
+			Vector.countSlow=0;
+			long startTimeFrame = System.currentTimeMillis();
+			StdDraw.setPenColor(Color.white);
 			StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
-			Engine.draw(color1,renderWidth,renderHeight);
-			Engine.draw(color2,renderWidth,renderHeight);
-			Engine.draw(color3,renderWidth,renderHeight);
-			Engine.draw(color4,renderWidth,renderHeight);
-			StdDraw.show();
-			long endTimeDraw = System.currentTimeMillis();
-			System.out.println("Draw all time: "+((endTimeDraw - startTimeDraw)) + " milliseconds");
-
-			if (checkFor(KeyEvent.VK_W)) {
-				camZ+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
-				camX+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+			long startTime = System.currentTimeMillis();
+			ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+			for(int i=0;i<tasks.length;i++) {
+				pool.execute(tasks[i]);
 			}
-			if (checkFor(KeyEvent.VK_S)) {
-				camZ-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
-				camX-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+			pool.shutdown();
+			try {
+				pool.awaitTermination(10000, TimeUnit.MILLISECONDS);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			if (checkFor(KeyEvent.VK_A)) {
-				camX+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
-				camZ-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
-			}
-			if (checkFor(KeyEvent.VK_D)) {
-				camX-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
-				camZ+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
-			}
-			if (checkFor(KeyEvent.VK_SHIFT)) {
-				camY+=speed*camY/2;
-			}
-			if (checkFor(KeyEvent.VK_CONTROL)) {
-				camY-=speed*camY/2;
-			}
-			if (checkFor(KeyEvent.VK_UP)) {
-				camRotX-=speed*30/camZoom;
-			}
-			if (checkFor(KeyEvent.VK_DOWN)) {
-				camRotX+=speed*30/camZoom;
-			}
-			if (checkFor(KeyEvent.VK_LEFT)) {
-				camRotY-=speed*30/camZoom;
-			}
-			if (checkFor(KeyEvent.VK_RIGHT)) {
-				camRotY+=speed*30/camZoom;
-			}
-			if (checkFor(KeyEvent.VK_R)) {
-				if(camZoom<10) {
-					camZoom+=speed*camZoom;
-				}
-			}
-			if (checkFor(KeyEvent.VK_F)) {
-				if(camZoom>.25) {
-					camZoom-=speed*camZoom;
-				}
-			}
-			bounceHeight+=bounceSpeed;
-			if(bounceHeight<spheres[1].radius) {
-				bounceSpeed=bounceSpeed*-1;
-			}else {
-				bounceSpeed+=bounceAcceleration;
-			}
-			for(int i=1;i<spheres.length;i++) {
-				spheres[i].center.y=bounceHeight;
-			}
-			camLocation.setX(camX);
-			camLocation.setY(camY);
-			camLocation.setZ(camZ);
-
-			camera.setLocation(camLocation);
-			camera.setxAngle(camRotX);
-			camera.setyAngle(camRotY);
-			camera.setzAngle(camRotZ);
-			camera.setZoom(camZoom);
-
-			//cameraRays=camera.generateRays();
-
 			long endTime = System.currentTimeMillis();
-			System.out.println("Frame time: "+((endTime - startTime)) + " milliseconds");
+			System.out.println("Calculation time: "+((endTime - startTime)) + " milliseconds");
+			long startTimeDraw = System.currentTimeMillis();
+			//Engine.draw(allColor, renderWidth, renderHeight);
+			Engine.drawFast(allColor);
+			//StdDraw.setPenColor(Color.white);
+			//StdDraw.textLeft(10, renderHeight-10, "fps: "+fps);
+			//StdDraw.show();
+			
+			long endTimeDraw = System.currentTimeMillis();
+			System.out.println("Draw time: "+((endTimeDraw - startTimeDraw)) + " milliseconds");
+			checkInput();
+			long endTimeFrame = System.currentTimeMillis();
+			fps=1000.0*1/(endTimeFrame-startTimeFrame);
+			System.out.println("Total frame time: "+((endTimeFrame - startTimeFrame)) + " milliseconds");
+			System.out.println("FPS: "+fps);
 			System.out.println();
+			//System.out.println("Table count: "+Vector.countFast);
+			//System.out.println("Math.sqrt count: "+Vector.countSlow);
 		}
 	}
+
 
 	private static boolean checkFor(int key) {
 		if (StdDraw.isKeyPressed(key)) {
@@ -197,5 +121,72 @@ public class Main {
 		else {
 			return false;
 		}
+	}
+	
+	private static void checkInput() {
+		if (checkFor(KeyEvent.VK_W)) {
+			camZ+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+			camX+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+		}
+		if (checkFor(KeyEvent.VK_S)) {
+			camZ-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+			camX-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+		}
+		if (checkFor(KeyEvent.VK_A)) {
+			camX+=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+			camZ-=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+		}
+		if (checkFor(KeyEvent.VK_D)) {
+			camX-=(speed*camY/2)*Math.sin(Math.toRadians(camRotY));
+			camZ+=(speed*camY/2)*Math.cos(Math.toRadians(camRotY));
+		}
+		if (checkFor(KeyEvent.VK_SHIFT)) {
+			camY+=speed*camY/2;
+		}
+		if (checkFor(KeyEvent.VK_CONTROL)) {
+			camY-=speed*camY/2;
+		}
+		if (checkFor(KeyEvent.VK_UP)) {
+			camRotX-=speed*30/camZoom;
+		}
+		if (checkFor(KeyEvent.VK_DOWN)) {
+			camRotX+=speed*30/camZoom;
+		}
+		if (checkFor(KeyEvent.VK_LEFT)) {
+			camRotY-=speed*30/camZoom;
+		}
+		if (checkFor(KeyEvent.VK_RIGHT)) {
+			camRotY+=speed*30/camZoom;
+		}
+		if (checkFor(KeyEvent.VK_R)) {
+			if(camZoom<10) {
+				camZoom+=speed*camZoom;
+			}
+		}
+		if (checkFor(KeyEvent.VK_F)) {
+			if(camZoom>.25) {
+				camZoom-=speed*camZoom;
+			}
+		}
+		bounceHeight+=bounceSpeed;
+		if(bounceHeight<spheres[1].radius) {
+			bounceSpeed=bounceSpeed*-1;
+		}else {
+			bounceSpeed+=bounceAcceleration;
+		}
+		for(int i=1;i<spheres.length;i++) {
+			spheres[i].center.y=bounceHeight;
+		}
+
+		camLocation.setX(camX);
+		camLocation.setY(camY);
+		camLocation.setZ(camZ);
+		camera.setLocation(camLocation);
+
+		camera.setxAngle(camRotX);
+		camera.setyAngle(camRotY);
+		camera.setzAngle(camRotZ);
+
+		camera.setZoom(camZoom);
 	}
 }

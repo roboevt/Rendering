@@ -1,7 +1,15 @@
 package render;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.event.KeyEvent;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.WindowConstants;
 
 public class Engine {
 	public int renderWidth;
@@ -22,6 +30,10 @@ public class Engine {
 	public Point light;
 	Ray[][] cameraRays;
 	Color skyColor;
+	public int castRays;
+
+	private static JFrame frame;
+	private static JLabel label;
 
 	public Engine(int renderSize, int renderScale, int maxBounces, Sphere[] spheres) {
 		this.renderWidth=renderSize;
@@ -41,10 +53,22 @@ public class Engine {
 		light=new Point(500,500,0);
 		this.cameraRays=new Ray[renderWidth][renderHeight];
 		skyColor=new Color(0,0,0);
+		castRays=0;
+
 	}
-	
+
 	public void setSkyColor(Color color) {
 		this.skyColor=color;
+	}
+
+	public  Color[] calculateLine(Ray[] cameraRays,int line, Sphere[] spheres, Point light){
+		Color[] colorOut=new Color[renderWidth];
+		int i=line;
+		for(int j=0;j<cameraRays.length;j++) {
+			colorOut[j]=calculateRay(cameraRays[j],spheres,light,0);
+		}
+		return colorOut;
+
 	}
 
 	public  Color[][] calculateRays(Ray[][] cameraRays,int startX, int endX, int startY, int endY, Sphere[] spheres, Point light){
@@ -59,6 +83,7 @@ public class Engine {
 	}
 
 	private  Color calculateRay(Ray ray, Sphere[] spheres, Point light, int bounces) { // the main attraction
+		castRays++;
 		Color color=skyColor;
 		double distanceToSphere=ray.distanceToSpheres(spheres);
 		int hitSphere=1;
@@ -120,6 +145,42 @@ public class Engine {
 		}
 	}
 
+	public static void drawFast(Color[][] colorIn) {
+		BufferedImage image=new BufferedImage(colorIn.length,colorIn[0].length,BufferedImage.TYPE_INT_RGB);
+		int[] pixel=new int[3];
+		System.out.println("ColorIn X: "+colorIn.length);
+		System.out.println("ColorIn Y: "+colorIn[0].length);
+		for(int x=0;x<colorIn.length;x++) {
+			for(int y=0;y<colorIn[0].length;y++) {
+				//System.out.println("x: "+x);
+				//System.out.println("y: "+y);
+				//System.out.println("x out: "+(int)Math.round(StdDraw.scaleX(x))*2);
+				//System.out.println("y out: "+(int) ((int)Math.round(StdDraw.scaleY(y))*2));
+				pixel[0]   = colorIn[x][y].getRed();     // red component
+				pixel[1] = colorIn[x][y].getGreen();    // green component
+				pixel[2] = colorIn[x][y].getBlue();  // blue component
+				WritableRaster raster =  image.getRaster();
+				raster.setPixel((int)StdDraw.scaleX(x), ((int)StdDraw.scaleY(y)-1), pixel);
+			}
+		}
+		StdDraw.display(image);
+	}
+
+	public static void display(BufferedImage image){
+		if(frame==null){
+			frame=new JFrame();
+			frame.setTitle("stained_image");
+			frame.setSize(image.getWidth(), image.getHeight());
+			frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			label=new JLabel();
+			label.setIcon(new ImageIcon(image));
+			frame.getContentPane().add(label,BorderLayout.CENTER);
+			frame.setLocationRelativeTo(null);
+			frame.pack();
+			frame.setVisible(true);
+		}else label.setIcon(new ImageIcon(image));
+	}
+
 	private static boolean checkFor(int key) {
 		if (StdDraw.isKeyPressed(key)) {
 			return true;
@@ -131,16 +192,22 @@ public class Engine {
 
 	public Color[][] calculateFrame(int quadrant, Ray[][] cameraRays) {
 		if(quadrant==1) {
-			return calculateRays(cameraRays,renderWidth/2,renderWidth,renderHeight/2,renderHeight,spheres,light);
+			return calculateRays(cameraRays,0,renderWidth/3,renderHeight/2,renderHeight,spheres,light);
 		}
 		if(quadrant==2) {
-			return calculateRays(cameraRays, 0,renderWidth/2,renderHeight/2,renderHeight, spheres, light);
+			return calculateRays(cameraRays, renderWidth/3,2*renderWidth/3,renderHeight/2,renderHeight, spheres, light);
 		}
 		if(quadrant==3) {
-			return calculateRays(cameraRays,0,renderWidth/2,0,renderHeight/2,spheres,light);
+			return calculateRays(cameraRays,2*renderWidth/3,renderWidth,renderHeight/2,renderHeight,spheres,light);
 		}
 		if(quadrant==4) {
-			return calculateRays(cameraRays, renderWidth/2,renderWidth,0,renderHeight/2,spheres,light);
+			return calculateRays(cameraRays, 0,renderWidth/3,0,renderHeight/2,spheres,light);
+		}
+		if(quadrant==5) {
+			return calculateRays(cameraRays, renderWidth/3,2*renderWidth/3,0,renderHeight/2,spheres,light);
+		}
+		if(quadrant==6) {
+			return calculateRays(cameraRays, 2*renderWidth/3,renderWidth,0,renderHeight/2,spheres,light);
 		}
 		return null;
 	}

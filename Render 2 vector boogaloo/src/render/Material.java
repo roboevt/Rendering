@@ -8,7 +8,7 @@ public class Material {
 
 	public Material(boolean reflective) {
 		this.reflective = reflective;
-		this.color = new Color(255,255,255);
+		this.color = new Color(0,0,0);
 	}
 
 	public void setColor(int r, int g, int b) {

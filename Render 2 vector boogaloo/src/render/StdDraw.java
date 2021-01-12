@@ -25,6 +25,7 @@ package render;
  ******************************************************************************/
 
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FileDialog;
@@ -53,6 +54,7 @@ import java.awt.geom.Rectangle2D;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DirectColorModel;
+import java.awt.image.VolatileImage;
 import java.awt.image.WritableRaster;
 
 import java.io.File;
@@ -73,6 +75,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
 
 /**
  *  The {@code StdDraw} class provides a basic capability for
@@ -604,7 +607,8 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 	private static Font font;
 
 	// double buffered graphics
-	private static BufferedImage offscreenImage, onscreenImage;
+	public static BufferedImage offscreenImage, onscreenImage;
+	//public static VolatileImage offscreenImage, onscreenImage;
 	private static Graphics2D offscreen, onscreen;
 
 	// singleton for callbacks: avoids generation of extra .class files
@@ -623,6 +627,11 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 
 	// set of key codes currently pressed down
 	private static TreeSet<Integer> keysDown = new TreeSet<Integer>();
+
+
+
+	private static JFrame customFrame;
+	private static JLabel label;
 
 	// singleton pattern: client can't instantiate
 	private StdDraw() { }
@@ -668,11 +677,11 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 	private static void init() {
 		if (frame != null) frame.setVisible(false);
 		frame = new JFrame();
-		offscreenImage = new BufferedImage(2*width, 2*height, BufferedImage.TYPE_INT_ARGB);
-		onscreenImage  = new BufferedImage(2*width, 2*height, BufferedImage.TYPE_INT_ARGB);
+		offscreenImage = new BufferedImage(width*2, height*2, BufferedImage.TYPE_INT_RGB);
+		onscreenImage  = new BufferedImage(width*2, height*2, BufferedImage.TYPE_INT_RGB);
 		offscreen = offscreenImage.createGraphics();
 		onscreen  = onscreenImage.createGraphics();
-		offscreen.scale(2.0, 2.0);  // since we made it 2x as big
+		offscreen.scale(2.0, .0);  // since we made it 2x as big
 
 		setXscale();
 		setYscale();
@@ -699,14 +708,14 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 		frame.setContentPane(draw);
 		frame.addKeyListener(std);    // JLabel cannot get keyboard focus
 		frame.setFocusTraversalKeysEnabled(false);  // allow VK_TAB with isKeyPressed()
-		frame.setResizable(false);
+		frame.setResizable(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);            // closes all windows
 		// frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);      // closes only current window
-		frame.setTitle("Standard Draw");
+		frame.setTitle("Ray/Path Tracing");
 		frame.setJMenuBar(createMenuBar());
 		frame.pack();
 		frame.requestFocusInWindow();
-		frame.setVisible(true);
+		//frame.setVisible(true);
 	}
 
 	// create the menu bar (changed to private)
@@ -827,8 +836,8 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 	}
 
 	// helper functions that scale from user coordinates to screen coordinates and back
-	private static double  scaleX(double x) { return width  * (x - xmin) / (xmax - xmin); }
-	private static double  scaleY(double y) { return height * (ymax - y) / (ymax - ymin); }
+	public static double  scaleX(double x) { return width  * (x - xmin) / (xmax - xmin); }
+	public static double  scaleY(double y) { return height * (ymax - y) / (ymax - ymin); }
 	private static double factorX(double w) { return w * width  / Math.abs(xmax - xmin);  }
 	private static double factorY(double h) { return h * height / Math.abs(ymax - ymin);  }
 	private static double   userX(double x) { return xmin + x * (xmax - xmin) / width;    }
@@ -1007,8 +1016,8 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 	 * @throws IllegalArgumentException if {@code x} or {@code y} is either NaN or infinite
 	 */
 	public static void pixel(double x, double y) {
-		validate(x, "x");
-		validate(y, "y");
+		//validate(x, "x");
+		//validate(y, "y");
 		offscreen.fillRect((int) Math.round(scaleX(x)), (int) Math.round(scaleY(y)), 1, 1);
 	}
 
@@ -1722,6 +1731,11 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 		frame.repaint();
 	}
 
+	public static void show(BufferedImage image) {
+		onscreen.drawImage(image, 0, 0, null);
+		frame.repaint();
+	}
+
 	// draw onscreen if defer is false
 	private static void draw() {
 		if (!defer) show();
@@ -2086,6 +2100,30 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
 		StdDraw.text(0.8, 0.8, "white text");
 	}
 
+
+
+
+	public static void display(BufferedImage image){
+		if(customFrame==null){
+			
+			customFrame=new JFrame();
+			customFrame.setTitle("stained_image");
+			customFrame.setSize(image.getWidth(), image.getHeight());
+			customFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+			label=new JLabel();
+			label.setIcon(new ImageIcon(image));
+			
+			label.addMouseListener(std);
+			label.addMouseMotionListener(std);
+			customFrame.addKeyListener(std);    // JLabel cannot get keyboard focus
+			customFrame.setFocusTraversalKeysEnabled(false);  // allow VK_TAB with isKeyPressed()
+			
+			customFrame.getContentPane().add(label,BorderLayout.CENTER);
+			customFrame.setLocationRelativeTo(null);
+			customFrame.pack();
+			customFrame.setVisible(true);
+		}else label.setIcon(new ImageIcon(image));
+	}
 }
 
 
@@ -2113,4 +2151,7 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
  *  You should have received a copy of the GNU General Public License
  *  along with stdlib-package.jar.  If not, see http://www.gnu.org/licenses.
  *************************************************************************/
+
+
+
 
