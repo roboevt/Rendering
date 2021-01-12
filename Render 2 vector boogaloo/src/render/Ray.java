@@ -50,44 +50,27 @@ public class Ray {
 	}
 
 	public double distanceToSpheres(Sphere[] spheres) {
-		double[] distances=new double[spheres.length];
-		int i=-1;
-		boolean skip=false;
-		
-		double tToCenter=0;
-		double tBackToEdge=0;
-		double t0=0;
-		double t1=0;
-		for(Sphere sphere:spheres) {
-			
-			i++;
-			skip=false;
+		double minDistance=Integer.MAX_VALUE;
+		for(Sphere sphere:spheres) {		
 			Vector L = this.origin.subtractToVector(sphere.getCenter()); 
-			tToCenter=L.dot(this.direction.normalize());
-			if(tToCenter<0) { //sphere is behind ray
-				distances[i]=Integer.MAX_VALUE;
-				skip=true;
-			}
+			double tToCenter=L.dot(this.direction.normalize());
 			double d=Math.sqrt(Math.pow(L.magnitude(),2)-Math.pow(tToCenter,2));
-			if(!skip) {
-				if(d<sphere.radius) {//ray hits sphere!
-					tBackToEdge=Math.sqrt(Math.pow(sphere.radius, 2)-Math.pow(d, 2));
-					t0=tToCenter-tBackToEdge;
-					t1=tToCenter+tBackToEdge;
-					if(t0<t1) {
-						distances[i]=t0;
-					}else {
-						distances[i]=t1;
+			if(tToCenter>0) {//if the sphere is in front of the ray
+				if(d<sphere.radius) {//if the ray hits the sphere
+					double tBackToEdge=Math.sqrt(Math.pow(sphere.radius, 2)-Math.pow(d, 2));
+					double t0=tToCenter-tBackToEdge;
+					double t1=tToCenter+tBackToEdge;
+					if(t0<t1&&t0<minDistance) {//which intersection point is closer and is this closer than any other point?
+						minDistance=t0;
+					}else if(t1<minDistance){
+						minDistance=t1;
 					}
-				} else {//ray does not hit sphere
-					distances[i]=Integer.MAX_VALUE;
 				}
 			}
 		}
-		Arrays.sort(distances);
-		return distances[0];
+		return minDistance;
 	}
-	
+
 	public Ray calculateReflection(Ray normal,Point pointOnSphere) {
 		normal.setDirection(normal.getDirection().normalize()); //normalize
 		double dot=normal.getDirection().dot(this.getDirection()); //(normal dot incoming)

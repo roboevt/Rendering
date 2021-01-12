@@ -12,7 +12,6 @@ public class Vector {
 	private static int sqrtTableLength=10000;
 	
 	public Vector(double x, double y, double z) {
-		//Engine.count++;
 		this.x = x;
 		this.y = y;
 		this.z = z;

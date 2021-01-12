@@ -21,18 +21,18 @@ public class Main {
 	public static Ray[][] cameraRays;
 	public static Color[][] allColor;
 	public static Sphere[] spheres;
-	public static int renderWidth=800;
-	public static int renderHeight=800;
-	public static int renderScale=1;
+	public static int renderWidth =1000;
+	public static int renderHeight=1000;
+	public static int numSpheres=10;
 	public static double bounceHeight;
 	public static double bounceSpeed;
 	public static double bounceAcceleration;
 	public static Color skyColor;
 	public static int maxBounces=5;
-	public static Point light=new Point(500,500,0);
+	public static Point light=new Point(500,500,500);
 
 	public static void main(String[] args) {
-		StdDraw.setCanvasSize(renderWidth*renderScale,renderHeight*renderScale);
+		StdDraw.setCanvasSize(renderWidth,renderHeight);
 		StdDraw.setXscale(0,renderWidth);
 		StdDraw.setYscale(0,renderHeight);
 		//StdDraw.setPenColor(new Color(0,0,0));
@@ -60,7 +60,7 @@ public class Main {
 		camRotation.setY(camRotY);
 		camRotation.setX(camRotZ);
 		camera=new Camera(camLocation, camRotX, camRotY,camRotZ,renderWidth,renderHeight,camZoom);
-		spheres=Sphere.generateRandomSpheres(5);
+		spheres=Sphere.generateRandomSpheres(numSpheres);
 
 		skyColor=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
 		skyColor=Color.black;
@@ -69,11 +69,13 @@ public class Main {
 		for(int i=0;i<renderWidth;i++) {
 			tasks[i]=new RenderLine(i,spheres);
 		}
-		
 		System.out.println("Threads: "+Runtime.getRuntime().availableProcessors());
 		
 		double fps=0;
+		long startTimeRender = System.currentTimeMillis();
+		int f=0;
 		while(true) {
+			f++;
 			Vector.countFast=0;
 			Vector.countSlow=0;
 			long startTimeFrame = System.currentTimeMillis();
@@ -88,17 +90,12 @@ public class Main {
 			try {
 				pool.awaitTermination(10000, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			long endTime = System.currentTimeMillis();
 			System.out.println("Calculation time: "+((endTime - startTime)) + " milliseconds");
 			long startTimeDraw = System.currentTimeMillis();
-			//Engine.draw(allColor, renderWidth, renderHeight);
 			Engine.drawFast(allColor);
-			//StdDraw.setPenColor(Color.white);
-			//StdDraw.textLeft(10, renderHeight-10, "fps: "+fps);
-			//StdDraw.show();
 			
 			long endTimeDraw = System.currentTimeMillis();
 			System.out.println("Draw time: "+((endTimeDraw - startTimeDraw)) + " milliseconds");
@@ -107,9 +104,10 @@ public class Main {
 			fps=1000.0*1/(endTimeFrame-startTimeFrame);
 			System.out.println("Total frame time: "+((endTimeFrame - startTimeFrame)) + " milliseconds");
 			System.out.println("FPS: "+fps);
+			long endTimeRender = System.currentTimeMillis();
+			double avgFps=f/((endTimeRender-startTimeRender)/1000.0);
+			System.out.println("Average FPS: "+avgFps);
 			System.out.println();
-			//System.out.println("Table count: "+Vector.countFast);
-			//System.out.println("Math.sqrt count: "+Vector.countSlow);
 		}
 	}
 

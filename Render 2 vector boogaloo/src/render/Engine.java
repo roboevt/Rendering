@@ -61,7 +61,7 @@ public class Engine {
 		this.skyColor=color;
 	}
 
-	public  Color[] calculateLine(Ray[] cameraRays,int line, Sphere[] spheres, Point light){
+	public  Color[] calculateLine(Ray[] cameraRays, int line, Sphere[] spheres, Point light){
 		Color[] colorOut=new Color[renderWidth];
 		int i=line;
 		for(int j=0;j<cameraRays.length;j++) {
@@ -86,6 +86,7 @@ public class Engine {
 		castRays++;
 		Color color=skyColor;
 		double distanceToSphere=ray.distanceToSpheres(spheres);
+		double brightness=0;
 		int hitSphere=1;
 		if(distanceToSphere<Integer.MAX_VALUE-1) {//ray hits sphere
 			Vector vectorToSphere=ray.getDirection().multiply(distanceToSphere);
@@ -107,7 +108,8 @@ public class Engine {
 				if(checkShadow(pointOnSphere,spheres,light)) {
 					return Color.black;
 				}else {
-					double brightness=checkDiffuse(pointOnSphere,spheres[hitSphere],light,ray);
+					brightness=checkDiffuse(pointOnSphere,spheres[hitSphere],light,ray);
+					//brightness=1;
 					return spheres[hitSphere].material.scaleColor(brightness);
 				}
 			}
@@ -147,19 +149,14 @@ public class Engine {
 
 	public static void drawFast(Color[][] colorIn) {
 		BufferedImage image=new BufferedImage(colorIn.length,colorIn[0].length,BufferedImage.TYPE_INT_RGB);
+		WritableRaster raster =  image.getRaster();
 		int[] pixel=new int[3];
-		System.out.println("ColorIn X: "+colorIn.length);
-		System.out.println("ColorIn Y: "+colorIn[0].length);
 		for(int x=0;x<colorIn.length;x++) {
 			for(int y=0;y<colorIn[0].length;y++) {
-				//System.out.println("x: "+x);
-				//System.out.println("y: "+y);
-				//System.out.println("x out: "+(int)Math.round(StdDraw.scaleX(x))*2);
-				//System.out.println("y out: "+(int) ((int)Math.round(StdDraw.scaleY(y))*2));
 				pixel[0]   = colorIn[x][y].getRed();     // red component
 				pixel[1] = colorIn[x][y].getGreen();    // green component
 				pixel[2] = colorIn[x][y].getBlue();  // blue component
-				WritableRaster raster =  image.getRaster();
+				
 				raster.setPixel((int)StdDraw.scaleX(x), ((int)StdDraw.scaleY(y)-1), pixel);
 			}
 		}

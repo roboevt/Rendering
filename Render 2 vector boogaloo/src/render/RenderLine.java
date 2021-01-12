@@ -13,7 +13,7 @@ public class RenderLine implements Runnable {
 	public void run() {
 		Ray[] cameraRays=new Ray[Main.renderWidth];
 
-		Engine engine=new Engine(Main.renderWidth,Main.renderScale,Main.maxBounces,Main.spheres);
+		Engine engine=new Engine(Main.renderWidth,1,Main.maxBounces,Main.spheres);
 
 		cameraRays=Main.camera.generateRaysLine(line);
 		Main.allColor[line]=engine.calculateLine(cameraRays,line,spheres,Main.light);
