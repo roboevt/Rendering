@@ -36,12 +36,7 @@ public class Main {
 		StdDraw.setCanvasSize(renderWidth,renderHeight);
 		StdDraw.setXscale(0,renderWidth);
 		StdDraw.setYscale(0,renderHeight);
-		//StdDraw.setPenColor(new Color(0,0,0));
-		//StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
-		//StdDraw.setPenRadius(0);
 		StdDraw.enableDoubleBuffering();
-
-		System.setProperty("Dsun.java2d.opengl", "True"); //this doesn't seem to do much of anything
 		
 		allColor=new Color[renderWidth][renderHeight];
 		

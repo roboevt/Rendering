@@ -113,7 +113,7 @@ public class Engine {
 				pointOnPlane=pointOnPlane.add(hitPlane.normal.multiply(-.0001f)); //bumps the point away from the surface a bit
 				if(hitPlane.material.reflective&&bounces<maxBounces) { //if material of hit sphere is reflective, and not at max bounce limit, recurse
 					Ray reflection=ray.calculateReflection(new Ray(hitPlane.point,hitPlane.normal), pointOnPlane);
-					color=calculateRay(reflection,spheres,planes,light,bounces+1);
+					color=calculateRay(reflection,spheres,planes,light,bounces+1).darker();
 				}else {
 					if(checkShadow(pointOnPlane,spheres,planes,light)) {
 						return Color.black;
@@ -131,7 +131,8 @@ public class Engine {
 	private static boolean checkShadow(PointF pointOnSphere, Sphere[] spheres, Plane[] planes, PointF light) {
 		VectorF vectorToLight=new VectorF(light.x-pointOnSphere.x,light.y-pointOnSphere.y,light.z-pointOnSphere.z);
 		Ray rayToLight=new Ray(pointOnSphere,vectorToLight.normalize());
-		if(rayToLight.distanceToNearestObject(spheres,planes)<vectorToLight.magnitude()) { //in shadow
+		//if(rayToLight.distanceToNearestObject(spheres,planes)<vectorToLight.magnitude()) { //in shadow
+		if(rayToLight.checkAnyCollision(spheres, planes,vectorToLight.magnitude())) {
 			return true; //in shadow
 		}else {
 			return false; //in light

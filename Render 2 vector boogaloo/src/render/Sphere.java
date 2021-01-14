@@ -34,7 +34,7 @@ public class Sphere {
 		return spheres;
 	}
 	
-	public float distanceToRay(Ray ray) {
+	public float distanceToRay(Ray ray) { //this method takes the most time of them all. How do I optimize it? Is it just called a lot?
 		VectorF L = ray.origin.subtractToVectorF(this.getCenter()); 
 		float tToCenter=L.dot(ray.direction.normalize());
 		float d=(float) Math.sqrt(Math.pow(L.magnitude(),2)-Math.pow(tToCenter,2));

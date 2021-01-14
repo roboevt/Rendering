@@ -67,6 +67,22 @@ public class Ray {
 		}
 		return minDistance;
 	}
+	
+	public boolean checkAnyCollision(Sphere[] spheres, Plane[] planes, float maxDistance) {
+		for(Sphere sphere:spheres) {
+			float distanceToSphere=sphere.distanceToRay(this);
+			if(distanceToSphere<maxDistance) {
+				return true;
+			}
+		}
+		for(Plane plane:planes) {
+			float distanceToPlane=plane.distanceToRay(this);
+			if(distanceToPlane<maxDistance) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public Ray calculateReflection(Ray normal,PointF pointOnSphere) {
 		normal.setDirection(normal.getDirection().normalize()); //normalize
