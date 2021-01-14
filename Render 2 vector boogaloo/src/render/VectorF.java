@@ -57,8 +57,11 @@ public class VectorF {
 	}
 	
 	public float magnitude() {
-		Float magnitude=(float) Math.sqrt(Math.pow(this.x, 2)+Math.pow(this.y, 2)+Math.pow(this.z, 2));
-		return magnitude;
+		return (float) Math.sqrt(Math.pow(this.x, 2)+Math.pow(this.y, 2)+Math.pow(this.z, 2));
+	}
+	
+	public float magnitudeSquared() {
+		return (float) (Math.pow(this.x, 2)+Math.pow(this.y, 2)+Math.pow(this.z, 2));
 	}
 	
 	public VectorF normalize() {

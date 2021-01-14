@@ -16,19 +16,17 @@ public class Sphere {
 	public static Sphere[] generateRandomSpheres(int numSpheres) {
 		Sphere[] spheres=new Sphere[numSpheres+1];
 		Color color=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
-		spheres[0]=new Sphere(new PointF(0,-1000,0), 1000, new Material(false));
+		spheres[0]=new Sphere(new PointF(0,-1000,0), 1000, new Material(0));
 		spheres[0].setColor(color);
 		for(int i=1;i<numSpheres+1;i++) {
 			float y=(float) (.2+Math.random()*.2);
 			float radius=y;
-			boolean reflective=true;
 			PointF center=new PointF((float)(2.5-5*Math.random()),y,(float)(2.5-5*Math.random()));
-			spheres[i]=new Sphere(center,radius,new Material(reflective));
+			spheres[i]=new Sphere(center,radius,new Material(1));
 			if(Math.random()>.5) {//number represents probability of reflective sphere
-				reflective=false;
 				color=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
 				spheres[i].setColor(color);
-				spheres[i].material.reflective=reflective;
+				spheres[i].material.surfaceFinish=0;
 			}	
 		}
 		return spheres;

@@ -22,15 +22,17 @@ public class Main {
 	public static Color[][] allColor;
 	public static Sphere[] spheres;
 	public static Plane[] planes = new Plane[5];
-	public static int renderWidth =600;
-	public static int renderHeight=600;
+	public static Triangle[] triangles = new Triangle[1];
+	public static int renderWidth =900;
+	public static int renderHeight=900;
 	public static int numSpheres=10;
 	public static float bounceHeight;
 	public static float bounceSpeed;
 	public static float bounceAcceleration;
 	public static Color skyColor;
 	public static int maxBounces=10;
-	public static PointF light=new PointF(0,5,0);
+	public static PointF light=new PointF(0,5.9f,0);
+	public static Objects objects;
 
 	public static void main(String[] args) {
 		StdDraw.setCanvasSize(renderWidth,renderHeight);
@@ -57,14 +59,26 @@ public class Main {
 		camRotation.setX(camRotZ);
 		camera=new Camera(camLocation, camRotX, camRotY,camRotZ,renderWidth,renderHeight,camZoom);
 		spheres=Sphere.generateRandomSpheres(numSpheres);
-		planes[0]=new Plane(new PointF(0,0,5),new VectorF(0,0,1),new Material(false));
-		planes[1]=new Plane(new PointF(0,0,-5),new VectorF(0,0,-1),new Material(false));
-		planes[2]=new Plane(new PointF(-5,0,0),new VectorF(-1,0,0),new Material(false));
-		planes[3]=new Plane(new PointF(5,0,0),new VectorF(1,0,0),new Material(false));
-		planes[4]=new Plane(new PointF(0,6,0),new VectorF(0,1,0),new Material(false));
+		planes[0]=new Plane(new PointF(0,0,5),new VectorF(0,0,1),new Material(0));
+		planes[1]=new Plane(new PointF(0,0,-5),new VectorF(0,0,-1),new Material(0));
+		planes[2]=new Plane(new PointF(-5,0,0),new VectorF(-1,0,0),new Material(0));
+		planes[3]=new Plane(new PointF(5,0,0),new VectorF(1,0,0),new Material(0));
+		planes[4]=new Plane(new PointF(0,6,0),new VectorF(0,1,0),new Material(0));
 		planes[0].material.setColor(255, 0, 255);
-		planes[2].material.reflective=true;
-		planes[3].material.reflective=true;
+		planes[1].material.setColor(0,255,0);
+		planes[2].material.surfaceFinish=1;
+		planes[3].material.surfaceFinish=1;
+		planes[0].radius=5;
+		planes[1].radius=5;
+		planes[2].radius=5;
+		planes[3].radius=5;
+		planes[4].radius=.1f;
+		PointF point1=new PointF(-1,-1,2);
+		PointF point2=new PointF(0,1,2);
+		PointF point3=new PointF(1,-1,2);
+		Triangle triangle=new Triangle(point1,point2,point3);
+		triangle.material.color=Color.white;
+		triangles[0]=triangle;
 		skyColor=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
 		skyColor=Color.black;
 
@@ -77,13 +91,12 @@ public class Main {
 		double fps=0;
 		long startTimeRender = System.currentTimeMillis();
 		int f=0;
-		while(true) {
+		objects=new Objects(spheres,planes,triangles);
+		while(true) { //The main frame loop
 			f++;
 			Vector.countFast=0;
 			Vector.countSlow=0;
 			long startTimeFrame = System.currentTimeMillis();
-			StdDraw.setPenColor(Color.white);
-			StdDraw.filledRectangle(renderWidth/2,renderHeight/2,renderWidth,renderHeight);
 			long startTime = System.currentTimeMillis();
 			ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 			for(int i=0;i<tasks.length;i++) {

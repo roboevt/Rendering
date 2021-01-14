@@ -49,34 +49,47 @@ public class Ray {
 		}
 	}
 
-	public float distanceToNearestObject(Sphere[] spheres, Plane[] planes) {
+	public float distanceToNearestObject(Objects objects) {
 		float minDistance=Integer.MAX_VALUE;
-		for(Sphere sphere:spheres) {
+		for(Sphere sphere:objects.spheres) {
 			float distanceToSphere=sphere.distanceToRay(this);
 			if(distanceToSphere<minDistance) {
 				minDistance=distanceToSphere;
 				hitObject=sphere;
 			}
 		}
-		for(Plane plane:planes) {
+		for(Plane plane:objects.planes) {
 			float distanceToPlane=plane.distanceToRay(this);
 			if(distanceToPlane<minDistance) {
 				minDistance=distanceToPlane;
 				hitObject=plane;
 			}
 		}
+		for(Triangle triangle:objects.triangles) {
+			float distanceToPlane=triangle.distanceToRay(this);
+			if(distanceToPlane<minDistance) {
+				minDistance=distanceToPlane;
+				hitObject=triangle;
+			}
+		}
 		return minDistance;
 	}
 	
-	public boolean checkAnyCollision(Sphere[] spheres, Plane[] planes, float maxDistance) {
-		for(Sphere sphere:spheres) {
+	public boolean checkAnyCollision(Objects objects, float maxDistance) {
+		for(Sphere sphere:objects.spheres) {
 			float distanceToSphere=sphere.distanceToRay(this);
 			if(distanceToSphere<maxDistance) {
 				return true;
 			}
 		}
-		for(Plane plane:planes) {
+		for(Plane plane:objects.planes) {
 			float distanceToPlane=plane.distanceToRay(this);
+			if(distanceToPlane<maxDistance) {
+				return true;
+			}
+		}
+		for(Triangle triangle:objects.triangles) {
+			float distanceToPlane=triangle.distanceToRay(this);
 			if(distanceToPlane<maxDistance) {
 				return true;
 			}

@@ -3,11 +3,11 @@ package render;
 import java.awt.Color;
 
 public class Material {
-	public boolean reflective;
+	public int surfaceFinish; //0=diffuse, 1=mirror
 	public Color color;
 
-	public Material(boolean reflective) {
-		this.reflective = reflective;
+	public Material(int reflective) {
+		this.surfaceFinish = reflective;
 		this.color = new Color(0,0,0);
 	}
 

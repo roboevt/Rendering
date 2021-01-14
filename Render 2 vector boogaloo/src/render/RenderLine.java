@@ -10,8 +10,8 @@ public class RenderLine implements Runnable {
 	@Override
 	public void run() {
 		Ray[] cameraRays=new Ray[Main.renderWidth];
-		Engine engine=new Engine(Main.renderWidth,1,Main.maxBounces,Main.spheres);
+		Engine engine=new Engine(Main.renderWidth,1,Main.maxBounces);
 		cameraRays=Main.camera.generateRaysLine(line);
-		Main.allColor[line]=engine.calculateLine(cameraRays,line,Main.spheres,Main.planes,Main.light);
+		Main.allColor[line]=engine.calculateLine(cameraRays,line,Main.objects,Main.light);
 	}
 }
