@@ -19,6 +19,17 @@ public class Triangle {
 		this.material=new Material(0);
 	}
 	
+	public Triangle(Vec3d vec3d, Vec3d vec3d2, Vec3d vec3d3) {
+		this.point1=vec3d.toVectorF().toPointF();
+		this.point2=vec3d2.toVectorF().toPointF();
+		this.point3=vec3d3.toVectorF().toPointF();
+		VectorF oneTwo = point1.subtractToVectorF(point2);
+		VectorF oneThree=point1.subtractToVectorF(point3);
+		this.normal=oneTwo.cross(oneThree).normalize();
+		this.plane=new Plane(point1, normal);
+		this.material=new Material(0);
+	}
+
 	private boolean checkPoint(PointF checkPoint) {
 		VectorF edge1=point1.subtractToVectorF(point2);
 		VectorF edge2=point2.subtractToVectorF(point3);
