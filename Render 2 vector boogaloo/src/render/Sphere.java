@@ -31,11 +31,29 @@ public class Sphere {
 				spheres[i].material.reflective=reflective;
 			}	
 		}
-		/*Sphere[] spheres=new Sphere[3];
-		spheres[0]=new Sphere(new Point(0,-1000,0),999,new Material(false));
-		spheres[1]=new Sphere(new Point(0,0,0),2,new Material(false));
-		spheres[2]=new Sphere(new Point(3,0,0),2,new Material(true));*/
 		return spheres;
+	}
+	
+	public float distanceToRay(Ray ray) {
+		VectorF L = ray.origin.subtractToVectorF(this.getCenter()); 
+		float tToCenter=L.dot(ray.direction.normalize());
+		float d=(float) Math.sqrt(Math.pow(L.magnitude(),2)-Math.pow(tToCenter,2));
+		if(tToCenter>0) {//if the sphere is in front of the ray
+			if(d<this.radius) {//if the ray hits the sphere
+				float tBackToEdge=(float) Math.sqrt(Math.pow(this.radius, 2)-Math.pow(d, 2));
+				float t0=tToCenter-tBackToEdge;
+				float t1=tToCenter+tBackToEdge;
+				if(t0<t1) {
+					return t0;
+				}else{
+					return t1;
+				}
+			}else {
+				return Integer.MAX_VALUE;
+			}
+		}else {
+			return Integer.MAX_VALUE;
+		}
 	}
 
 	public PointF getCenter() {

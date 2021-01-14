@@ -12,6 +12,6 @@ public class RenderLine implements Runnable {
 		Ray[] cameraRays=new Ray[Main.renderWidth];
 		Engine engine=new Engine(Main.renderWidth,1,Main.maxBounces,Main.spheres);
 		cameraRays=Main.camera.generateRaysLine(line);
-		Main.allColor[line]=engine.calculateLine(cameraRays,line,Main.spheres,Main.light);
+		Main.allColor[line]=engine.calculateLine(cameraRays,line,Main.spheres,Main.planes,Main.light);
 	}
 }

@@ -2,7 +2,6 @@ package render;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 
@@ -54,72 +53,85 @@ public class Engine {
 		this.cameraRays=new Ray[renderWidth][renderHeight];
 		skyColor=new Color(0,0,0);
 		castRays=0;
-
 	}
 
 	public void setSkyColor(Color color) {
 		this.skyColor=color;
 	}
 
-	public  Color[] calculateLine(Ray[] cameraRays, int line, Sphere[] spheres, PointF light){
+	public  Color[] calculateLine(Ray[] cameraRays, int line, Sphere[] spheres, Plane[] planes, PointF light){
 		Color[] colorOut=new Color[renderWidth];
 		for(int j=0;j<cameraRays.length;j++) {
-			colorOut[j]=calculateRay(cameraRays[j],spheres,light,0);
+			colorOut[j]=calculateRay(cameraRays[j],spheres,planes,light,0);
 		}
 		return colorOut;
 
 	}
 
-	public  Color[][] calculateRays(Ray[][] cameraRays,int startX, int endX, int startY, int endY, Sphere[] spheres, PointF light){
+	public  Color[][] calculateRays(Ray[][] cameraRays,int startX, int endX, int startY, int endY, Sphere[] spheres, Plane[] planes, PointF light){
 		Color[][] colorOut=new Color[renderWidth][renderHeight];
 		for(int i=startX;i<endX;i++) {
 			for(int j=startY;j<endY;j++) {
-				colorOut[i][j]=calculateRay(cameraRays[i][j],spheres,light,0);
+				colorOut[i][j]=calculateRay(cameraRays[i][j],spheres,planes,light,0);
 			}
 		}
 		return colorOut;
 
 	}
 
-	private  Color calculateRay(Ray ray, Sphere[] spheres, PointF light, int bounces) { // the main attraction
-		castRays++;
+	private  Color calculateRay(Ray ray, Sphere[] spheres, Plane[] planes, PointF light, int bounces) { // the main attraction
+		//castRays++;
 		Color color=skyColor;
-		float distanceToSphere=ray.distanceToSpheres(spheres);
+		float distanceToObject=ray.distanceToNearestObject(spheres,planes);
+		Object hitObject=ray.hitObject;
 		float brightness=0;
-		int hitSphere=1;
-		if(distanceToSphere<Integer.MAX_VALUE-1) {//ray hits sphere
-			VectorF vectorToSphere=ray.getDirection().multiply(distanceToSphere);
-			PointF pointOnSphere=ray.getOrigin().add(vectorToSphere.toPointF());
-			for(int i=0;i<spheres.length;i++) {
-				VectorF centerToPoint=new VectorF(pointOnSphere.x-spheres[i].getCenter().x, pointOnSphere.y-spheres[i].getCenter().y, pointOnSphere.z-spheres[i].getCenter().z);
-				if(Math.abs(centerToPoint.magnitude()-spheres[i].getRadius())<.001) {//point is on sphere i
-					hitSphere=i;
+		if(hitObject!=null) {//ray hits sphere or plane. Which?
+			if(hitObject instanceof Sphere) { //ray hit a sphere
+				Sphere hitSphere=(Sphere) hitObject;
+				VectorF vectorToSphere=ray.getDirection().multiply(distanceToObject);
+				PointF pointOnSphere=ray.getOrigin().add(vectorToSphere.toPointF());
+				if(hitSphere.material.reflective&&bounces<maxBounces) { //if material of hit sphere is reflective, and not at max bounce limit, recurse
+					VectorF normal=new VectorF(pointOnSphere.x-hitSphere.getCenter().x, pointOnSphere.y-hitSphere.getCenter().y, pointOnSphere.z-hitSphere.getCenter().z);
+					//pointOnSphere.add(normal.multiply(.001).toPoint()); //the bumps the point away from the surface a bit, seems to not be necessary for some reason
+					Ray reflection=ray.calculateReflection(new Ray(hitSphere.getCenter(),normal), pointOnSphere);
+					color=calculateRay(reflection,spheres,planes,light,bounces+1);
+
+				}else {// if not reflective or already at max bounces, check shadows and end.
+					if(checkShadow(pointOnSphere,spheres,planes,light)) {//if in shadow
+						return Color.black;
+					}else {//if not in shadow
+						brightness=checkDiffuse(pointOnSphere,hitSphere,light,ray);
+						//brightness=1;
+						return hitSphere.material.scaleColor(brightness);
+					}
 				}
-			}
 
-			if(spheres[hitSphere].material.reflective&&bounces<maxBounces) { //if material of hit sphere is reflective, and not at max bounce limit, recurse
-				VectorF normal=new VectorF(pointOnSphere.x-spheres[hitSphere].getCenter().x, pointOnSphere.y-spheres[hitSphere].getCenter().y, pointOnSphere.z-spheres[hitSphere].getCenter().z);
-				//pointOnSphere.add(normal.multiply(.001).toPoint()); //the bumps the point away from the surface a bit, seems to not be necessary for some reason
-				Ray reflection=ray.calculateReflection(new Ray(spheres[hitSphere].getCenter(),normal), pointOnSphere);
-				color=calculateRay(reflection,spheres,light,bounces+1);
-
-			}else {// if not reflective or already at max bounces, check shadows and end.
-				if(checkShadow(pointOnSphere,spheres,light)) {
-					return Color.black;
+			}else {//hit a plane
+				Plane hitPlane=(Plane) hitObject;
+				VectorF vectorToPlane=ray.getDirection().normalize().multiply(distanceToObject);
+				PointF pointOnPlane=ray.getOrigin().add(vectorToPlane.toPointF());
+				pointOnPlane=pointOnPlane.add(hitPlane.normal.multiply(-.0001f)); //bumps the point away from the surface a bit
+				if(hitPlane.material.reflective&&bounces<maxBounces) { //if material of hit sphere is reflective, and not at max bounce limit, recurse
+					Ray reflection=ray.calculateReflection(new Ray(hitPlane.point,hitPlane.normal), pointOnPlane);
+					color=calculateRay(reflection,spheres,planes,light,bounces+1);
 				}else {
-					brightness=checkDiffuse(pointOnSphere,spheres[hitSphere],light,ray);
-					//brightness=1;
-					return spheres[hitSphere].material.scaleColor(brightness);
+					if(checkShadow(pointOnPlane,spheres,planes,light)) {
+						return Color.black;
+					}else {
+						brightness=checkDiffuse(pointOnPlane,hitPlane,light,ray);
+						return hitPlane.material.scaleColor(-brightness);
+						//return hitPlane.material.color;
+					}
 				}
 			}
 		}	
 		return color;
 	}
 
-	private static boolean checkShadow(PointF pointOnSphere, Sphere[] spheres, PointF light) {
+	private static boolean checkShadow(PointF pointOnSphere, Sphere[] spheres, Plane[] planes, PointF light) {
 		VectorF vectorToLight=new VectorF(light.x-pointOnSphere.x,light.y-pointOnSphere.y,light.z-pointOnSphere.z);
 		Ray rayToLight=new Ray(pointOnSphere,vectorToLight.normalize());
-		if(rayToLight.distanceToSpheres(spheres)<vectorToLight.magnitude()) { //in shadow
+		if(rayToLight.distanceToNearestObject(spheres,planes)<vectorToLight.magnitude()) { //in shadow
 			return true; //in shadow
 		}else {
 			return false; //in light
@@ -130,6 +142,12 @@ public class Engine {
 		VectorF lightVector=new VectorF(light.x-pointOnSphere.x,light.y-pointOnSphere.y,light.z-pointOnSphere.z);
 		VectorF normal=new VectorF(pointOnSphere.x-sphere.getCenter().x, pointOnSphere.y-sphere.getCenter().y, pointOnSphere.z-sphere.getCenter().z);
 		float angle=(float) Math.acos(normal.dot(lightVector)/(lightVector.magnitude()*normal.magnitude()));
+		return (float) Math.cos(angle);
+	}
+
+	private static float checkDiffuse(PointF pointOnPlane, Plane plane, PointF light, Ray ray) {
+		VectorF lightVector=new VectorF(light.x-pointOnPlane.x,light.y-pointOnPlane.y,light.z-pointOnPlane.z);
+		float angle=(float) Math.acos(plane.normal.dot(lightVector)/(lightVector.magnitude()*plane.normal.magnitude()));
 		return (float) Math.cos(angle);
 	}
 
@@ -155,7 +173,7 @@ public class Engine {
 				pixel[0]   = colorIn[x][y].getRed();     // red component
 				pixel[1] = colorIn[x][y].getGreen();    // green component
 				pixel[2] = colorIn[x][y].getBlue();  // blue component
-				
+
 				raster.setPixel((int)StdDraw.scaleX(x), ((int)StdDraw.scaleY(y)-1), pixel);
 			}
 		}
@@ -175,15 +193,6 @@ public class Engine {
 			frame.pack();
 			frame.setVisible(true);
 		}else label.setIcon(new ImageIcon(image));
-	}
-
-	private static boolean checkFor(int key) {
-		if (StdDraw.isKeyPressed(key)) {
-			return true;
-		}
-		else {
-			return false;
-		}
 	}
 
 	public static void main(String[] args) {

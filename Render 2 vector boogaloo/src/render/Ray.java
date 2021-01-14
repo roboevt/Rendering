@@ -1,14 +1,14 @@
 package render;
 
-import java.util.Arrays;
-
 public class Ray {
 	public PointF origin;
 	public VectorF direction;
+	public Object hitObject;
 
 	public Ray(PointF origin, VectorF direction) {
 		this.origin = origin;
 		this.direction = direction;
+		this.hitObject=null;
 	}
 
 	public PointF getOrigin() {
@@ -49,23 +49,20 @@ public class Ray {
 		}
 	}
 
-	public float distanceToSpheres(Sphere[] spheres) {
+	public float distanceToNearestObject(Sphere[] spheres, Plane[] planes) {
 		float minDistance=Integer.MAX_VALUE;
-		for(Sphere sphere:spheres) {		
-			VectorF L = this.origin.subtractToVectorF(sphere.getCenter()); 
-			float tToCenter=L.dot(this.direction.normalize());
-			float d=(float) Math.sqrt(Math.pow(L.magnitude(),2)-Math.pow(tToCenter,2));
-			if(tToCenter>0) {//if the sphere is in front of the ray
-				if(d<sphere.radius) {//if the ray hits the sphere
-					float tBackToEdge=(float) Math.sqrt(Math.pow(sphere.radius, 2)-Math.pow(d, 2));
-					float t0=tToCenter-tBackToEdge;
-					float t1=tToCenter+tBackToEdge;
-					if(t0<t1&&t0<minDistance) {//which intersection point is closer and is this closer than any other point?
-						minDistance=t0;
-					}else if(t1<minDistance){
-						minDistance=t1;
-					}
-				}
+		for(Sphere sphere:spheres) {
+			float distanceToSphere=sphere.distanceToRay(this);
+			if(distanceToSphere<minDistance) {
+				minDistance=distanceToSphere;
+				hitObject=sphere;
+			}
+		}
+		for(Plane plane:planes) {
+			float distanceToPlane=plane.distanceToRay(this);
+			if(distanceToPlane<minDistance) {
+				minDistance=distanceToPlane;
+				hitObject=plane;
 			}
 		}
 		return minDistance;

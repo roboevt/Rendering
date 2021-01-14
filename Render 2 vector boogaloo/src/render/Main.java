@@ -21,15 +21,16 @@ public class Main {
 	public static Ray[][] cameraRays;
 	public static Color[][] allColor;
 	public static Sphere[] spheres;
-	public static int renderWidth =1000;
-	public static int renderHeight=1000;
+	public static Plane[] planes = new Plane[5];
+	public static int renderWidth =600;
+	public static int renderHeight=600;
 	public static int numSpheres=10;
 	public static float bounceHeight;
 	public static float bounceSpeed;
 	public static float bounceAcceleration;
 	public static Color skyColor;
-	public static int maxBounces=5;
-	public static PointF light=new PointF(500,500,500);
+	public static int maxBounces=10;
+	public static PointF light=new PointF(0,5,0);
 
 	public static void main(String[] args) {
 		StdDraw.setCanvasSize(renderWidth,renderHeight);
@@ -48,7 +49,7 @@ public class Main {
 		bounceAcceleration=-.02f;
 		camX=0;
 		camY=1;
-		camZ=-6;
+		camZ=-4;
 		camRotX=0;
 		camRotY=90;
 		camRotZ=0;
@@ -61,7 +62,14 @@ public class Main {
 		camRotation.setX(camRotZ);
 		camera=new Camera(camLocation, camRotX, camRotY,camRotZ,renderWidth,renderHeight,camZoom);
 		spheres=Sphere.generateRandomSpheres(numSpheres);
-
+		planes[0]=new Plane(new PointF(0,0,5),new VectorF(0,0,1),new Material(false));
+		planes[1]=new Plane(new PointF(0,0,-5),new VectorF(0,0,-1),new Material(false));
+		planes[2]=new Plane(new PointF(-5,0,0),new VectorF(-1,0,0),new Material(false));
+		planes[3]=new Plane(new PointF(5,0,0),new VectorF(1,0,0),new Material(false));
+		planes[4]=new Plane(new PointF(0,6,0),new VectorF(0,1,0),new Material(false));
+		planes[0].material.setColor(255, 0, 255);
+		planes[2].material.reflective=true;
+		planes[3].material.reflective=true;
 		skyColor=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
 		skyColor=Color.black;
 
