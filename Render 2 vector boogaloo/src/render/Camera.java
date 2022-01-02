@@ -97,21 +97,10 @@ public class Camera {
 				float zRot2=(float) ((zRot1*Math.sin(Math.toRadians(yAngle)))+(xRot1*Math.cos(Math.toRadians(yAngle))));
 				float yRot2=yRot1;
 
-				/*double xRot=x;
-				double yRot=(y*getCos((int)xAngle))-(z*getSin((int)xAngle));
-				double zRot=(y*getSin((int)xAngle))+(z*getCos((int)xAngle));
 
-				double xRot1=(xRot*getCos((int)zAngle))-(yRot*getSin((int)zAngle));
-				double yRot1=(xRot*getSin((int)zAngle))+(yRot*getCos((int)zAngle));
-				double zRot1=zRot;
-
-				double xRot2=(zRot1*getCos((int)yAngle))-(xRot1*getSin((int)yAngle));
-				double zRot2=(zRot1*getSin((int)yAngle))+(xRot1*getCos((int)yAngle));
-				double yRot2=yRot1;*/
 				ray[i][j]=new Ray(location,new VectorF(xRot2,yRot2,zRot2));
 				ray[i][j].setDirection(ray[i][j].getDirection().normalize());
 			}
-			//System.out.println(ray[i][0].getDirection().toString());
 		}
 		long endTime = System.currentTimeMillis();
 		System.out.println("Generate ray time: "+((endTime - startTime)) + " milliseconds");
@@ -171,12 +160,12 @@ public class Camera {
 		return ray;
 	}
 
-	public Ray[] generateRaysLine(int line){
+	public Ray[] generateRaysLine(int line){  // currently in use
 		Ray[] ray=new Ray[renderWidth];
 		int i=line;
 		for(int j=0;j<renderHeight;j++) {
 			float x=(i-(renderWidth/2.0f))/(renderWidth/2.0f);
-			float y=(j-(renderHeight/2.0f))/(renderHeight/2.0f);	
+			float y=(j-(renderHeight/2.0f))/(renderHeight/2.0f);
 			float z=zoom;
 
 			float xRot=x;

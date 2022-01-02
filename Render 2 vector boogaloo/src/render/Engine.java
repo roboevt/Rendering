@@ -185,9 +185,9 @@ public class Engine {
 		int[] pixel=new int[3];
 		for(int x=0;x<colorIn.length;x++) {
 			for(int y=0;y<colorIn[0].length;y++) {
-				pixel[0]   = colorIn[x][y].getRed();     // red component
-				pixel[1] = colorIn[x][y].getGreen();    // green component
-				pixel[2] = colorIn[x][y].getBlue();  // blue component
+				pixel[0] = colorIn[x][y].getRed();  // red component
+				pixel[1] = colorIn[x][y].getGreen();// green component
+				pixel[2] = colorIn[x][y].getBlue(); // blue component
 
 				raster.setPixel((int)StdDraw.scaleX(x), ((int)StdDraw.scaleY(y)-1), pixel);
 			}

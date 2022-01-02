@@ -26,9 +26,9 @@ public class Main {
 	public static Color[][] allColor;
 	public static Sphere[] spheres;
 	public static Plane[] planes = new Plane[5];
-	//public static Triangle[] triangles = new Triangle[1];
-	public static int renderWidth =800;
-	public static int renderHeight=800;
+	public static Triangle[] triangles = new Triangle[1];
+	public static int renderWidth =600;
+	public static int renderHeight=600;
 	public static int numSpheres=10;
 	public static float bounceHeight;
 	public static float bounceSpeed;
@@ -77,16 +77,16 @@ public class Main {
 		planes[2].radius=5;
 		planes[3].radius=5;
 		planes[4].radius=.1f;
-		/*PointF point1=new PointF(-1,-1,2);
-		PointF point2=new PointF(0,1,2);
-		PointF point3=new PointF(1,-1,2);
+		PointF point1=new PointF(-2,-1,2);
+		PointF point2=new PointF(0,2,3);
+		PointF point3=new PointF(2,-1,2);
 		Triangle triangle=new Triangle(point1,point2,point3);
 		triangle.material.color=Color.white;
-		triangles[0]=triangle;*/
+		triangles[0]=triangle;
 		//Path path=Paths.get("c:\\Users\\roboe\\Documents\\boxTest.stl");
 		//List<Triangle> trianglesList=STLParser.parseSTLFile(path);
 		//Triangle[] triangles=new Triangle[trianglesList.size()];
-		Triangle[] triangles=new Triangle[0];
+		//Triangle[] triangles=new Triangle[0];
 		//triangles=trianglesList.toArray(triangles);
 		skyColor=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
 		skyColor=Color.black;
