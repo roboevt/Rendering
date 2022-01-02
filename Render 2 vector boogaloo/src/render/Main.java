@@ -27,8 +27,8 @@ public class Main {
 	public static Sphere[] spheres;
 	public static Plane[] planes = new Plane[5];
 	//public static Triangle[] triangles = new Triangle[1];
-	public static int renderWidth =900;
-	public static int renderHeight=900;
+	public static int renderWidth =800;
+	public static int renderHeight=800;
 	public static int numSpheres=10;
 	public static float bounceHeight;
 	public static float bounceSpeed;
@@ -83,10 +83,11 @@ public class Main {
 		Triangle triangle=new Triangle(point1,point2,point3);
 		triangle.material.color=Color.white;
 		triangles[0]=triangle;*/
-		Path path=Paths.get("c:\\Users\\roboe\\Documents\\boxTest.stl");
-		List<Triangle> trianglesList=STLParser.parseSTLFile(path);
-		Triangle[] triangles=new Triangle[trianglesList.size()];
-		triangles=trianglesList.toArray(triangles);
+		//Path path=Paths.get("c:\\Users\\roboe\\Documents\\boxTest.stl");
+		//List<Triangle> trianglesList=STLParser.parseSTLFile(path);
+		//Triangle[] triangles=new Triangle[trianglesList.size()];
+		Triangle[] triangles=new Triangle[0];
+		//triangles=trianglesList.toArray(triangles);
 		skyColor=new Color((int)(255*Math.random()),(int)(255*Math.random()),(int)(255*Math.random()));
 		skyColor=Color.black;
 
